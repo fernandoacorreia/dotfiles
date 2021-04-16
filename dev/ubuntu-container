@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Launches a fresh, ephemeral Ubuntu container with dotfiles mounted.
+#
+set -o nounset -o errexit -o pipefail
+
+IMAGE_NAME="dotfiles-ubuntu-dev"
+
+docker build -t $IMAGE_NAME dev/dotfiles-ubuntu-dev-image
+
+docker run --rm -it -v $(pwd):/home/ubuntu/dotfiles -w /home/ubuntu/dotfiles $IMAGE_NAME
