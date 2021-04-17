@@ -1,9 +1,9 @@
 ---
 - name: "Create symlink to neovim configuration"
-  file: src={{ home_dir }}/macfiles/config/nvim dest={{ home_dir }}/.config/nvim state=link
+  file: src={{ home_dir }}/dotfiles/config/nvim dest={{ home_dir }}/.config/nvim state=link
 
 - name: "Install neovim"
-  command: "{{ home_dir }}/macfiles/bin/brew-install-or-upgrade neovim"
+  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade neovim"
 
 - name: "Create symlink to neovim"
   file: src="{{ homebrew_prefix }}/bin/nvim" dest=/usr/local/bin/vi state=link force=yes

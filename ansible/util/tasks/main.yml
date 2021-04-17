@@ -1,6 +1,6 @@
 ---
 - name: Install general utilities
-  command: "{{ home_dir }}/macfiles/bin/brew-install-or-upgrade {{item}}"
+  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade {{item}}"
   with_items:
     - colordiff
     - gh
@@ -18,6 +18,6 @@
 # REPLACE WITH A TEMPLATE
 # - name: Create link for ~/.editorconfig
 #   file:
-#     src: "{{ macfiles_dir }}/.editorconfig"
+#     src: "{{ dotfiles_dir }}/.editorconfig"
 #     dest: "{{ home_dir }}/.editorconfig"
 #     state: link
