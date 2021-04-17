@@ -3,7 +3,7 @@
 
   roles:
   - common
-  - macfiles
+  - dotfiles
   - cask
   - util
   - hack-font

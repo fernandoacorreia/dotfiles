@@ -1,6 +1,6 @@
 DEFAULT_USER=$(whoami)
 
-source $HOME/macfiles/vendor/antigen/antigen.zsh
+source $HOME/dotfiles/vendor/antigen/antigen.zsh
 antigen use oh-my-zsh
 
 antigen bundle git
@@ -10,7 +10,7 @@ antigen bundle zsh-users/zsh-syntax-highlighting
 
 # https://github.com/romkatv/powerlevel10k#antigen
 antigen theme romkatv/powerlevel10k
-source ~/macfiles/vendor/.purepower
+source ~/dotfiles/vendor/.purepower
 
 antigen apply
 

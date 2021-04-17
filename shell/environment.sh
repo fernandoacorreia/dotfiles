@@ -20,7 +20,7 @@ export KEYTIMEOUT=1
 export EDITOR=nvim
 
 # Add bin directory to path
-export PATH="$HOME/macfiles/bin:$PATH"
+export PATH="$HOME/dotfiles/bin:$PATH"
 
 # Add gnubin to PATH
 export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH

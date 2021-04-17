@@ -21,7 +21,7 @@
 
 - name: Create link for ~/.profile
   file:
-    src: "{{ macfiles_dir }}/shell/profile.sh"
+    src: "{{ dotfiles_dir }}/shell/profile.sh"
     dest: "{{ home_dir }}/.profile"
     state: link
 
@@ -36,6 +36,6 @@
 
 - name: Create link for ~/.zshrc
   file:
-    src: "{{ macfiles_dir }}/shell/zshrc.sh"
+    src: "{{ dotfiles_dir }}/shell/zshrc.sh"
     dest: "{{ home_dir }}/.zshrc"
     state: link

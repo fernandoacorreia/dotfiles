@@ -1,4 +1,4 @@
 ---
-- name: Set macfiles directory
+- name: Set dotfiles directory
   set_fact:
-    macfiles_dir: "{{ lookup('env','HOME') }}/macfiles"
+    dotfiles_dir: "{{ lookup('env','HOME') }}/dotfiles"
