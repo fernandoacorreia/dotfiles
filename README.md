@@ -10,7 +10,5 @@ Machine setup.
 ## Usage
 
 ```
-cd /tmp
-curl -O https://raw.githubusercontent.com/fernandoacorreia/dotfiles/main/bootstrap
-bash ./bootstrap
+curl https://raw.githubusercontent.com/fernandoacorreia/dotfiles/main/setup | bash -
 ```

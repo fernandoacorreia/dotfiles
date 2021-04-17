@@ -1,10 +1,158 @@
 #!/bin/bash
 #
-# Sets up machine using Ansible.
+# Sets up machine.
 #
 set -o nounset -o errexit -o pipefail
 
-export ANSIBLE_NOCOWS=1
+DOTFILES_DIR="$HOME/dotfiles"
+DOTFILES_REPO="git@github.com:fernandoacorreia/dotfiles.git"
+KEYFILE="$HOME/.ssh/id_ed25519"
 
-cd ansible
-ansible-playbook -i inventory --ask-become-pass playbook.yml
+missing_executable() {
+  local executable=$1
+  ! [ -x "$(command -v ${executable})" ]
+}
+
+macos_cli_dev_tools_installed() {
+  xcode-select --print-path &>/dev/null
+}
+
+macos_install_cli_dev_tools() {
+  if ! macos_cli_dev_tools_installed; then
+    echo "Installing command-line developer tools"
+    xcode-select --install
+    while ! cli_dev_tools_installed; do
+      echo "Waiting for installation to finish (look for a dialog window)"
+      sleep 10
+    done
+    # Required for pyenv: https://github.com/pyenv/pyenv/issues/1219
+    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS* -target /
+  fi
+}
+
+macos_install_brew() {
+  if missing_executable brew; then
+    echo "Installing Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+}
+
+macos_install_git() {
+  echo "Invoking git to trigger automated setup if it's not installed"
+  git --version
+}
+
+macos_create_ssh_key() {
+  if ! test -f "$KEYFILE"; then
+    echo "Creating ssh key"
+    ssh-keygen -t ed25519 -f "$KEYFILE" -C "$(hostname)"
+    echo "New ssh key created:"
+    cat "${KEYFILE}.pub"
+    echo "Add this ssh key to your GitHub account and run this script again."
+    echo "See https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/"
+    exit 1
+  fi
+}
+
+macos_add_ssh_key_to_agent() {
+  echo "Adding ssh key to ssh agent"
+  # Set config file
+  if ! grep id_ed25519 ~/.ssh/config &>/dev/null; then
+    cat <<EOF >> ~/.ssh/config
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile $KEYFILE
+EOF
+  fi
+  # Start agent
+  eval "$(ssh-agent -s)"
+  # Add key
+  ssh-add -K "$KEYFILE"
+}
+
+ubuntu_install_git() {
+  if missing_executable git; then
+    echo "Installing git"
+    apt-get update
+    apt-get install -y git
+  fi
+}
+
+ubuntu_create_ssh_key() {
+  if ! test -f "$KEYFILE"; then
+    echo "Creating ssh key"
+    ssh-keygen -t ed25519 -f "$KEYFILE" -C "$(hostname)"
+    echo "New ssh key created:"
+    cat "${KEYFILE}.pub"
+    echo "Add this ssh key to your GitHub account and run this script again."
+    echo "See https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/"
+    exit 1
+  fi
+}
+
+ubuntu_add_ssh_key_to_agent() {
+  echo "Adding ssh key to ssh agent"
+  # Start agent
+  eval "$(ssh-agent -s)"
+  # Add key
+  ssh-add "$KEYFILE"
+}
+
+install_prerequisites() {
+  mkdir -p $HOME/.ssh
+  if [ "${OSTYPE//[0-9.]/}" == "darwin" ]; then
+    macos_install_cli_dev_tools
+    macos_install_brew
+    macos_install_git
+    macos_create_ssh_key
+    macos_add_ssh_key_to_agent
+  elif cat /etc/*release | grep ^NAME | grep Ubuntu &>/dev/null; then
+    ubuntu_install_git
+    ubuntu_create_ssh_key
+    ubuntu_add_ssh_key_to_agent
+  else
+    echo "Unsupported OS"
+    exit 1
+  fi
+}
+
+clone_repository() {
+  echo "Cloning from $DOTFILES_REPO"
+  cd $HOME
+  git clone --recurse-submodules $DOTFILES_REPO
+}
+
+upgrade_pip() {
+  if missing_executable pip3; then
+    echo "pip3 not found"
+    exit 1
+  fi
+  echo "Upgrading pip3"
+  sudo --set-home pip3 install --upgrade pip
+}
+
+install_ansible() {
+  if missing_executable ansible-playbook; then
+    upgrade_pip
+    echo "Installing Ansible"
+    sudo pip3 install ansible
+  fi
+}
+
+run_ansible() {
+  install_ansible
+  echo "Running Ansible"
+  export ANSIBLE_NOCOWS=1
+  cd "$DOTFILES_DIR/ansible"
+  ansible-playbook -i inventory --ask-become-pass playbook.yml
+}
+
+
+if ! test -d $DOTFILES_DIR; then
+  install_prerequisites
+  clone_repository
+fi
+
+run_ansible
