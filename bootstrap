@@ -111,6 +111,7 @@ detect_platform() {
 }
 
 first_time_setup() {
+  mkdir -p $HOME/.ssh
   detect_platform
   if [ "$PLATFORM" == "macos" ]; then
     macos_install_cli_dev_tools
