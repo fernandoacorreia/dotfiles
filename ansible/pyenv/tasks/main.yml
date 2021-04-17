@@ -1,4 +1,4 @@
 # pyenv: https://github.com/pyenv/pyenv#homebrew-on-macos
 ---
 - name: "Install pyenv"
-  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade pyenv"
+  command: "{{ home_dir }}/dotfiles/bin/multi-install pyenv"

@@ -3,8 +3,8 @@
 # Uses Homebrew to install a formula or upgrade it if it already exists.
 #
 # Based on https://stackoverflow.com/a/44348249/376366
-
-set -eu -o pipefail
+#
+set -o nounset -o errexit -o pipefail
 
 if brew ls --versions "$1" >/dev/null; then
     HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade "$1"

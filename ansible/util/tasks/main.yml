@@ -1,6 +1,6 @@
 ---
 - name: Install general utilities
-  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade {{item}}"
+  command: "{{ home_dir }}/dotfiles/bin/multi-install {{item}}"
   with_items:
     - colordiff
     - gh

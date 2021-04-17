@@ -1,5 +1,5 @@
 # tig: https://github.com/jonas/tig
 ---
 - name: "Install tig"
-  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade tig"
+  command: "{{ home_dir }}/dotfiles/bin/multi-install tig"
 

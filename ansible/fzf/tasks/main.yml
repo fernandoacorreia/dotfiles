@@ -5,7 +5,7 @@
   register: "fzf_check"
 
 - name: "Install fzf"
-  command: "{{ home_dir }}/dotfiles/bin/brew-install-or-upgrade fzf"
+  command: "{{ home_dir }}/dotfiles/bin/multi-install fzf"
 
 - name: "Install fzf keybindings and fuzzy completion"
   shell: "{{ homebrew_prefix }}/opt/fzf/install"
