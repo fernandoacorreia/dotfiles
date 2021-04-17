@@ -20,3 +20,5 @@ if test -f kubectl; then
 fi
 
 source ~/.profile
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
