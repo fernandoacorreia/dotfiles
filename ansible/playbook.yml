@@ -10,6 +10,9 @@
   roles:
     - common
     - util
+#    - gh
+#    - libpq
+#    - stern
     - hack-font
     - shell
     - tig
@@ -29,3 +32,15 @@
 
 # - hosts: os_Ubuntu
 #   roles:
+
+# gh
+# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+# sudo apt-add-repository https://cli.github.com/packages
+# sudo apt update
+# sudo apt install gh
+
+# libpq
+# sudo apt-get install -y libpq-dev
+
+# stern
+# https://github.com/wercker/stern/releases
