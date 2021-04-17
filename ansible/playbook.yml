@@ -1,20 +1,32 @@
 ---
-- hosts: all
+- name: Group hosts by OS
+  hosts: all
+  tasks:
+    - name: Classify hosts depending on their OS distribution
+      group_by:
+        key: os_{{ ansible_facts['distribution'] }}
 
+- hosts: all
   roles:
-  - common
-  - dotfiles
-  - cask
-  - util
-  - hack-font
-  - iterm2
-  - sourcetree
-  - shell
-  - tig
-  - pyenv
-  - fzf
-  - neovim
-  - karabiner
-  - ruby
-  - node
-  - yarn
+    - common
+    - dotfiles
+    - util
+    - hack-font
+    - shell
+    - tig
+    - pyenv
+    - fzf
+    - neovim
+    - ruby
+    - node
+    - yarn
+
+- hosts: os_MacOSX
+  roles:
+    - cask
+    - iterm2
+    - sourcetree
+    - karabiner
+
+# - hosts: os_Ubuntu
+#   roles:
