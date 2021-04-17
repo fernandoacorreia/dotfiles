@@ -18,6 +18,6 @@
 # REPLACE WITH A TEMPLATE
 # - name: Create link for ~/.editorconfig
 #   file:
-#     src: "{{ dotfiles_dir }}/.editorconfig"
+#     src: "{{ home_dir }}/dotfiles/.editorconfig"
 #     dest: "{{ home_dir }}/.editorconfig"
 #     state: link
