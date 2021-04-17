@@ -8,4 +8,4 @@ IMAGE_NAME="dotfiles-ubuntu-dev"
 
 docker build -t $IMAGE_NAME dev/dotfiles-ubuntu-dev-image
 
-docker run --rm -it -v $(pwd):/home/ubuntu/dotfiles -w /home/ubuntu/dotfiles $IMAGE_NAME
+docker run --rm -it -v $HOME/.ssh/id_ed25519:/home/ubuntu/.ssh/id_ed25519 -v $(pwd):/home/ubuntu/dotfiles -w /home/ubuntu/dotfiles $IMAGE_NAME
