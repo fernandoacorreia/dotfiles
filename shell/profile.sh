@@ -10,7 +10,6 @@ fi
 source $HOME/dotfiles/shell/environment.sh
 source $HOME/dotfiles/shell/aliases.sh
 source $HOME/dotfiles/shell/less-termcap.sh
-source $HOME/dotfiles/shell/init.sh
 
 # Support a local profile script that's not saved to source control.
 if test -f $HOME/.local_profile

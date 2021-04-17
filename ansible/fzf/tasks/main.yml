@@ -9,5 +9,3 @@
 
 - name: "Install fzf keybindings and fuzzy completion"
   shell: "{{ homebrew_prefix }}/opt/fzf/install"
-  when: not fzf_check.stat.exists
-  ignore_errors: yes # see https://github.com/junegunn/fzf/issues/2361

@@ -27,3 +27,6 @@ export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
 
 # rbenv
 eval "$(rbenv init -)"
+
+# pyenv
+eval "$(pyenv init -)"
