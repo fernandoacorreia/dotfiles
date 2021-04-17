@@ -12,3 +12,5 @@ RUN pip3 install --upgrade pip
 RUN useradd -ms /bin/bash -G sudo ubuntu
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 USER ubuntu
+
+RUN mkdir -p /home/ubuntu/.ssh
