@@ -1,4 +1,21 @@
 ---
+- name: Set distribution
+  set_fact:
+    distribution: "{{ ansible_facts['distribution'] }}"
+
+- name: Check if package manager requires root user
+  set_fact:
+    package_needs_root: "{{ distribution != 'MacOSX' }}"
+
+# See https://stackoverflow.com/a/63734604/376366
+- name: Set become option for package
+  set_fact:
+    become_option: "{{ 'yes' if package_needs_root == True else 'no' }}"
+
+- name: Display distro information
+  debug:
+    msg: "distribution={{ distribution }}, package_needs_root={{ package_needs_root }}, become_option={{ become_option }}"
+
 - name: Get the username running Ansible
   local_action: command whoami
   register: username_on_the_host

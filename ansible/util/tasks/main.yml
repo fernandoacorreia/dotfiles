@@ -3,17 +3,24 @@
   command: "{{ home_dir }}/dotfiles/bin/multi-install {{item}}"
   with_items:
     - colordiff
-    - gh
     - git
     - htop
-    - libpq
     - nmap
     - ripgrep
-    - stern
     - telnet
     - tldr
     - tree
     - watch
+
+- name: Install Ubuntu utilities
+  when: distribution == 'Ubuntu'
+  become: yes
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-apt
+    - software-properties-common
 
 # REPLACE WITH A TEMPLATE
 # - name: Create link for ~/.editorconfig
