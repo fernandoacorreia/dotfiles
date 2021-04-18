@@ -149,7 +149,6 @@ run_ansible() {
   ansible-playbook -i inventory --ask-become-pass playbook.yml
 }
 
-
 if ! test -d $DOTFILES_DIR; then
   install_prerequisites
   clone_repository
