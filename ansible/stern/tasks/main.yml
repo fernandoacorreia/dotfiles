@@ -1,0 +1,16 @@
+---
+- name: Install stern on macOS
+  when: distribution == 'MacOSX'
+  package:
+    name: gh
+    state: present
+
+# See https://github.com/wercker/stern/releases
+- name: Install stern on Ubuntu
+  when: distribution == 'Ubuntu'
+  become: yes
+  get_url:
+    url: https://github.com/wercker/stern/releases/download/1.11.0/stern_linux_amd64
+    dest: /opt/bin/stern
+    mode: '0755'
+    checksum: sha256:e0b39dc26f3a0c7596b2408e4fb8da533352b76aaffdc18c7ad28c833c9eb7db

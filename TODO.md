@@ -3,6 +3,7 @@
 - nvim-miniyank
 - Ag support in neovim
 - gnubin
+  - check "Add gnubin to PATH" in environment.sh (and only add it if on macOS)
 - golang
 - rbenv
 - templates
