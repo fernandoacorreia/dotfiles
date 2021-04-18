@@ -1,6 +1,9 @@
 ---
 - name: Install general utilities
-  command: "{{ home_dir }}/dotfiles/bin/multi-install {{item}}"
+  become: "{{ become_option }}"
+  package:
+    name: "{{ item }}"
+    state: present
   with_items:
     - colordiff
     - git
