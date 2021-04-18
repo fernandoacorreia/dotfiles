@@ -1,0 +1,9 @@
+---
+- name: Install libpq
+  become: "{{ package_needs_root }}"
+  package:
+    name: '{{ item }}'
+    state: present
+  # Get an array of package names to install from the map in the default variables file (../defaults/main.yml)
+  # See https://stackoverflow.com/a/63734604/376366
+  loop: "{{ packages[distribution] | default(packages['default']) }}"

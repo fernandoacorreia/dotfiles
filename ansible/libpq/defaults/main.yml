@@ -1,0 +1,6 @@
+# See https://stackoverflow.com/a/63734604/376366
+packages:
+  default:
+    - libpq
+  Ubuntu:
+    - libpq-dev

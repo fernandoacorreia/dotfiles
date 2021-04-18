@@ -12,7 +12,7 @@
     - common
     - util
     - gh
-#    - libpq
+    - libpq
 #    - stern
     - hack-font
     - shell
@@ -33,9 +33,6 @@
 
 # - hosts: os_Ubuntu
 #   roles:
-
-# libpq
-# sudo apt-get install -y libpq-dev
 
 # stern
 # https://github.com/wercker/stern/releases
