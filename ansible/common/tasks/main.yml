@@ -28,9 +28,9 @@
   file: path={{ home_dir }}/{{ item }} state=directory
   with_items:
     - .config
-    - Projects
-    - Scratch
-    - Secrets
+    - projects
+    - scratch
+    - secrets
 
 - name: Create directory for system-level extra binaries
   become: yes
