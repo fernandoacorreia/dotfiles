@@ -1,11 +1,11 @@
 ---
-- name: "Check fzf installation status"
-  stat:
-    path: "{{ homebrew_prefix }}/bin/fzf"
-  register: "fzf_check"
+- name: Create link for ~/.fzf
+  file:
+    src: "{{ home_dir }}/dotfiles/vendor/fzf"
+    dest: "{{ home_dir }}/.fzf"
+    state: link
 
-- name: "Install fzf"
-  command: "{{ home_dir }}/dotfiles/bin/multi-install fzf"
-
-- name: "Install fzf keybindings and fuzzy completion"
-  shell: "{{ homebrew_prefix }}/opt/fzf/install"
+- name: Install fzf
+  shell: "{{ home_dir }}/.fzf/install"
+  args:
+    creates: "{{ home_dir }}/.fzf.zsh"
