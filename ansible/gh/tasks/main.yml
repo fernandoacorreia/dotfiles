@@ -1,13 +1,13 @@
 ---
 # See https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-- name: Add github repository key
+- name: Add github repository key on Ubuntu
   when: distribution == 'Ubuntu'
   become: yes
   ansible.builtin.apt_key:
     keyserver: keyserver.ubuntu.com
     id: C99B11DEB97541F0
 
-- name: Add github repository
+- name: Add github repository on Ubuntu
   when: distribution == 'Ubuntu'
   become: yes
   apt_repository:
