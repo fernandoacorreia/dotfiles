@@ -14,7 +14,7 @@
     repo: "deb https://cli.github.com/packages stable main"
 
 - name: Install gh
-  become: "{{ package_needs_root }}"
+  become: "{{ become_option }}"
   package:
     name: gh
     state: present
