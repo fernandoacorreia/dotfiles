@@ -5,9 +5,9 @@
   package:
     name: "{{ item }}"
     state: present
-    with_items:
-      - pyenv
-      - pyenv-virtualenv
+  with_items:
+    - pyenv
+    - pyenv-virtualenv
 
 - name: Install pyenv on Ubuntu
   when: distribution == 'Ubuntu'
