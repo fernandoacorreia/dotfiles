@@ -1,3 +1,4 @@
+- remove multi-install, brew-install-or-upgrade
 - why is become_option=True and not 'yes'?
 - incorporate tools from homefiles
 - incorporate tools from fedora-setup
@@ -6,7 +7,6 @@
 - gnubin
   - check "Add gnubin to PATH" in environment.sh (and only add it if on macOS)
 - golang
-- rbenv
-- templates
+- templates instead of symlinks
 - nerd fonts: https://github.com/ryanoasis/nerd-fonts
 - zsh on ubuntu: ansible/roles/zsh/tasks/main.yml
