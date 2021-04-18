@@ -12,6 +12,7 @@
   set_fact:
     become_option: "{{ 'yes' if package_needs_root == True else 'no' }}"
 
+# Work around https://github.com/ansible/ansible/issues/73887
 - name: Set pkg_mgr for macOS
   when: distribution == 'MacOSX'
   set_fact:
@@ -21,6 +22,10 @@
 - name: Display distro information
   debug:
     msg: "distribution={{ distribution }}, package_needs_root={{ package_needs_root }}, become_option={{ become_option }}, ansible_facts.pkg_mgr={{ ansible_facts.pkg_mgr }}"
+
+- name: Set Homebrew directory
+  set_fact:
+    homebrew_prefix: "{{ lookup('env','HOMEBREW_PREFIX') }}"
 
 - name: Get the username running Ansible
   local_action: command whoami
