@@ -14,7 +14,6 @@
     - gh
     - libpq
     - stern
-    - hack-font
     - shell
     - tig
     - pyenv
@@ -27,6 +26,7 @@
 - hosts: os_MacOSX
   roles:
     - cask
+    - hack-font
     - iterm2
     - sourcetree
     - karabiner
