@@ -25,6 +25,9 @@ export PATH="$HOME/dotfiles/bin:$PATH"
 # Add gnubin to PATH
 export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
 
+# Add system-level extra binaries to path
+export PATH="/opt/bin:$PATH"
+
 # rbenv
 eval "$(rbenv init -)"
 

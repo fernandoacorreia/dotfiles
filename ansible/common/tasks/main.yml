@@ -31,3 +31,9 @@
     - Projects
     - Scratch
     - Secrets
+
+- name: Create directory for system-level extra binaries
+  become: yes
+  file:
+    path: /opt/bin
+    state: directory

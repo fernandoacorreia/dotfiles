@@ -13,7 +13,7 @@
     - util
     - gh
     - libpq
-#    - stern
+    - stern
     - hack-font
     - shell
     - tig
@@ -33,6 +33,3 @@
 
 # - hosts: os_Ubuntu
 #   roles:
-
-# stern
-# https://github.com/wercker/stern/releases
