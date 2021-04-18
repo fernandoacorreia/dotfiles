@@ -1,4 +1,5 @@
 ---
+# See https://stackoverflow.com/a/63734604/376366
 - name: Group hosts by OS
   hosts: all
   tasks:
@@ -10,7 +11,7 @@
   roles:
     - common
     - util
-#    - gh
+    - gh
 #    - libpq
 #    - stern
     - hack-font
@@ -32,12 +33,6 @@
 
 # - hosts: os_Ubuntu
 #   roles:
-
-# gh
-# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-# sudo apt-add-repository https://cli.github.com/packages
-# sudo apt update
-# sudo apt install gh
 
 # libpq
 # sudo apt-get install -y libpq-dev
