@@ -8,3 +8,5 @@
 - golang
 - rbenv
 - templates
+- nerd fonts: https://github.com/ryanoasis/nerd-fonts
+- zsh on ubuntu: ansible/roles/zsh/tasks/main.yml
