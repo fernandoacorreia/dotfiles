@@ -1,5 +1,7 @@
 # Homebrew paths
-eval "$(/opt/homebrew/bin/brew shellenv)"
+if [ "${HOMEBREW_PREFIX:-}" != "" ]; then
+  eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
+fi
 
 # Import secrets
 if test -n "$(find ~/secrets -maxdepth 1 -name '*.sh' -print -quit)"  # https://stackoverflow.com/a/7702334
