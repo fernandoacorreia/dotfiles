@@ -8,4 +8,4 @@
 - golang
 - templates instead of symlinks
 - nerd fonts: https://github.com/ryanoasis/nerd-fonts
-- zsh on ubuntu: ansible/roles/zsh/tasks/main.yml
+- customize zsh prompt to display hostname and timestamp
