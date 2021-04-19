@@ -1,3 +1,19 @@
 ---
-- name: "Install yarn"
-  command: "{{ home_dir }}/dotfiles/bin/multi-install yarn"
+- name: Install yarn on macOS
+  when: distribution == 'MacOSX'
+  package:
+    name: yarn
+    state: present
+
+- name: Setup yarn on Ubuntu
+  when: distribution == 'Ubuntu'
+  block:
+    - name: Add yarn repository on Ubuntu
+      become: yes
+      apt_repository:
+        repo: "deb [signed-by={{ home_dir }}/dotfiles/vendor/yarnpkg/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main"
+    - name: Install yarn on Ubuntu
+      become: yes
+      package:
+        name: yarn
+        state: present
