@@ -1,5 +1,7 @@
 # tig: https://github.com/jonas/tig
 ---
-- name: "Install tig"
-  command: "{{ home_dir }}/dotfiles/bin/multi-install tig"
-
+- name: Install tig
+  become: "{{ become_option }}"
+  package:
+    name: tig
+    state: present
