@@ -24,6 +24,7 @@
   with_items:
     - python3-apt
     - software-properties-common
+    - zsh
 
 # REPLACE WITH A TEMPLATE
 # - name: Create link for ~/.editorconfig
