@@ -11,14 +11,14 @@
   roles:
     - common
     - util
+    - shell
+    - neovim
     - gh
     - libpq
     - stern
-    - shell
     - tig
     - pyenv
     - fzf
-    - neovim
     - ruby
     - node
     - yarn

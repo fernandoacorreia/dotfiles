@@ -3,8 +3,7 @@
   file: src={{ home_dir }}/dotfiles/config/nvim dest={{ home_dir }}/.config/nvim state=link
 
 - name: "Install neovim"
-  command: "{{ home_dir }}/dotfiles/bin/multi-install neovim"
-
-- name: "Create symlink to neovim"
-  file: src="{{ homebrew_prefix }}/bin/nvim" dest=/usr/local/bin/vi state=link force=yes
-  become: yes
+  become: "{{ become_option }}"
+  package:
+    name: neovim
+    state: present
