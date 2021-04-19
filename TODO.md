@@ -1,4 +1,3 @@
-- remove multi-install, brew-install-or-upgrade
 - why is become_option=True and not 'yes'?
 - incorporate tools from homefiles
 - incorporate tools from fedora-setup
