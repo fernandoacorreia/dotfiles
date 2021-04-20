@@ -14,3 +14,4 @@
 - templates or symlinks?
   - .gitconfig
   - editorconfig
+- stern zsh completions have been installed to: /opt/homebrew/share/zsh/site-functions
