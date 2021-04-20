@@ -10,7 +10,7 @@
   block:
     - name: Run node pre-setup script on Linux
       become: yes
-      shell: "{{ home_dir }}/dotfiles/vendor/nodesource/setup_15.x"
+      shell: "{{ home_dir }}/dotfiles/vendor/nodesource/setup_16.x"
       args:
         creates: "/usr/bin/node" # Skip this step if the step below was ran before.
     - name: Install nodejs on Linux
