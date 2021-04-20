@@ -31,5 +31,6 @@
     - sourcetree
     - karabiner
 
-# - hosts: os_Ubuntu
-#   roles:
+- hosts: os_Ubuntu
+  roles:
+    - docker
