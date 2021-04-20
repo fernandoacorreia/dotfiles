@@ -64,7 +64,6 @@ macos_create_ssh_key() {
   if ! test -f "$KEYFILE"; then
     echo "Creating ssh key"
     ssh-keygen -t ed25519 -f "$KEYFILE" -C "$(hostname)"
-    macos_add_ssh_key_to_agent
     echo ""
     echo "Add your new public ssh key to your GitHub account and run this script again:"
     echo ""
@@ -93,7 +92,6 @@ ubuntu_create_ssh_key() {
   if ! test -f "$KEYFILE"; then
     echo "Creating ssh key"
     ssh-keygen -t ed25519 -f "$KEYFILE" -C "$(hostname)"
-    ubuntu_add_ssh_key_to_agent
     echo ""
     echo "Add your new public ssh key to your GitHub account and run this script again:"
     echo ""
@@ -109,9 +107,11 @@ install_prerequisites() {
     macos_install_brew
     macos_install_git
     macos_create_ssh_key
+    macos_add_ssh_key_to_agent
   elif cat /etc/*release | grep ^NAME | grep Ubuntu &>/dev/null; then
     ubuntu_install_git
     ubuntu_create_ssh_key
+    ubuntu_add_ssh_key_to_agent
   else
     echo "Unsupported OS"
     exit 1
