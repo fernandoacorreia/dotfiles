@@ -1,3 +1,8 @@
+- Install Meslo nerd font:
+  https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k
+  - nerd fonts: https://github.com/ryanoasis/nerd-fonts
+- p10k configure
+  - customize zsh prompt to display hostname and timestamp
 - why is become_option=True and not 'yes'?
 - incorporate tools from homefiles
 - incorporate tools from fedora-setup
@@ -6,6 +11,6 @@
 - gnubin
   - check "Add gnubin to PATH" in environment.sh (and only add it if on macOS)
 - golang
-- templates instead of symlinks
-- nerd fonts: https://github.com/ryanoasis/nerd-fonts
-- customize zsh prompt to display hostname and timestamp
+- templates or symlinks?
+  - .gitconfig
+  - editorconfig
