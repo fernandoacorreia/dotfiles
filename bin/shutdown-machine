@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Shuts the machine down.
+#
+set -o nounset -o errexit -o pipefail
+
+sudo shutdown -h +1
