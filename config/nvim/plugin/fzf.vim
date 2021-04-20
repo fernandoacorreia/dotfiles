@@ -1,1 +1,1 @@
-/opt/homebrew/opt/fzf
+../../../../.fzf

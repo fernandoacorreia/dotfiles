@@ -2,27 +2,28 @@
 - name: Setup fzf on macOS
   when: distribution == 'MacOSX'
   block:
-    - name: "Install fzf using package manager"
+    - name: Install fzf using package manager on macOS
       package:
         name: fzf
         state: present
-    - name: Set fzf directory
+    - name: Set fzf director on macOS
       set_fact:
         fzf_dir: "{{ homebrew_prefix }}/opt/fzf"
 
 - name: Setup fzf on Linux
   when: distribution != 'MacOSX'
   block:
-    - name: Create link for ~/.fzf
-      file:
-        src: "{{ home_dir }}/dotfiles/vendor/fzf"
-        dest: "{{ home_dir }}/.fzf"
-        state: link
-    - name: Set fzf directory
+    - name: Set fzf directory on Linux
       set_fact:
-        fzf_dir: "{{ home_dir }}/.fzf"
+        fzf_dir: "{{ home_dir }}/dotfiles/vendor/fzf"
+
+- name: Create link for ~/.fzf
+  file:
+    src: "{{ fzf_dir }}"
+    dest: "{{ home_dir }}/.fzf"
+    state: link
 
 - name: Finish fzf install
-  shell: "{{ fzf_dir }}/install"
+  shell: "{{ home_dir }}/.fzf/install"
   args:
     creates: "{{ home_dir }}/.fzf.zsh"
