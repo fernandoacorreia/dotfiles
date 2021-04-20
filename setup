@@ -80,6 +80,14 @@ ubuntu_install_git() {
   fi
 }
 
+ubuntu_install_pip3() {
+  if missing_executable pip3; then
+    echo "Installing pip3"
+    sudo apt-get update
+    sudo apt-get install -y python3-pip
+  fi
+}
+
 ubuntu_add_ssh_key_to_agent() {
   echo "Adding ssh key to ssh agent"
   # Start agent
@@ -110,6 +118,7 @@ install_prerequisites() {
     macos_add_ssh_key_to_agent
   elif cat /etc/*release | grep ^NAME | grep Ubuntu &>/dev/null; then
     ubuntu_install_git
+    ubuntu_install_pip3
     ubuntu_create_ssh_key
     ubuntu_add_ssh_key_to_agent
   else
@@ -125,10 +134,6 @@ clone_repository() {
 }
 
 upgrade_pip() {
-  if missing_executable pip3; then
-    echo "pip3 not found"
-    exit 1
-  fi
   echo "Upgrading pip3"
   sudo --set-home pip3 install --upgrade pip
 }
