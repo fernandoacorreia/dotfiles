@@ -9,6 +9,7 @@
     - colordiff
     - git
     - htop
+    - jq
     - nmap
     - ripgrep
     - telnet
