@@ -8,4 +8,8 @@ IMAGE_NAME="dotfiles-ubuntu-dev"
 
 docker build --platform linux/amd64 -t $IMAGE_NAME dev/dotfiles-ubuntu-dev-image
 
-docker run --platform linux/amd64 --rm -it -v $HOME/.ssh/id_ed25519:/home/ubuntu/.ssh/id_ed25519 -v $(pwd):/home/ubuntu/dotfiles -w /home/ubuntu/dotfiles $IMAGE_NAME
+# Use this variant to test cloning dotfiles from the upstream repository.
+docker run --platform linux/amd64 --rm -it -v $HOME/.ssh/id_ed25519:/home/ubuntu/.ssh/id_ed25519 -v $(pwd):/mnt/dotfiles $IMAGE_NAME
+
+# Use this variant to mount the current dotfiles directory and skip cloning (good for iterating)
+# docker run --platform linux/amd64 --rm -it -v $HOME/.ssh/id_ed25519:/home/ubuntu/.ssh/id_ed25519 -v $(pwd):/home/ubuntu/dotfiles -w /home/ubuntu/dotfiles $IMAGE_NAME

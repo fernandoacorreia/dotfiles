@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Launches a fresh, ephemeral Amazon Linux 2 container with dotfiles mounted.
+#
+set -o nounset -o errexit -o pipefail
+
+IMAGE_NAME="dotfiles-amazonlinux2-dev"
+
+docker build --platform linux/amd64 -t $IMAGE_NAME dev/dotfiles-amazonlinux2-dev-image
+
+# Use this variant to test cloning dotfiles from the upstream repository.
+docker run --platform linux/amd64 --rm -it -v $HOME/.ssh/id_ed25519:/home/ec2-user/.ssh/id_ed25519 -v $(pwd):/mnt/dotfiles -w /home/ec2-user $IMAGE_NAME
