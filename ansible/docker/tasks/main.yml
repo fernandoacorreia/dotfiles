@@ -4,3 +4,18 @@
   become: yes
   args:
     creates: /usr/bin/docker
+
+# See https://docs.docker.com/compose/install/
+- name: Install docker-compose on Linux
+  when: distribution != 'MacOSX'
+  shell: sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  become: yes
+  args:
+    creates: /usr/local/bin/docker-compose
+
+- name: Make docker-compose executable on Linux
+  when: distribution != 'MacOSX'
+  become: yes
+  file:
+    path: /usr/local/bin/docker-compose
+    mode: '0755'
