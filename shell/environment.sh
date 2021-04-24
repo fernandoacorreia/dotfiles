@@ -40,6 +40,7 @@ eval "$(pyenv virtualenv-init -)"
 
 # keychain
 # See https://www.funtoo.org/Keychain
+# See https://unix.stackexchange.com/a/90869/56711
 if command -v keychain &>/dev/null; then
   eval `keychain --eval --agents ssh id_ed25519`
 fi
