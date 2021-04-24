@@ -20,3 +20,6 @@ alias watch='watch '  # https://unix.stackexchange.com/a/25329/56711
 
 # Neovim
 alias vi='nvim'
+
+# Tmux
+alias tmux='TERM=xterm-256color tmux'
