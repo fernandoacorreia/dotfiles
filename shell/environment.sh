@@ -37,3 +37,9 @@ fi
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
+
+# keychain
+# See https://www.funtoo.org/Keychain
+if command -v keychain &>/dev/null; then
+  eval `keychain --eval --agents ssh id_ed25519`
+fi
