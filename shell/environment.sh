@@ -44,3 +44,8 @@ eval "$(pyenv virtualenv-init -)"
 if command -v keychain &>/dev/null; then
   eval `keychain --eval --agents ssh id_ed25519`
 fi
+
+# linuxbrew
+if [ -f $HOME/.linuxbrew/bin/brew ]; then
+  eval $($HOME/.linuxbrew/bin/brew shellenv)
+fi
