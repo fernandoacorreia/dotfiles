@@ -22,3 +22,6 @@
 [submodule "vendor/fzf"]
 	path = vendor/fzf
 	url = git@github.com:fernandoacorreia/fzf.git
+[submodule "vendor/brew"]
+	path = vendor/brew
+	url = git@github.com:fernandoacorreia/brew.git
