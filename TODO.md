@@ -1,3 +1,4 @@
+- Install mcfly - https://github.com/cantino/mcfly
 - Install Meslo nerd font:
   https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k
   - nerd fonts: https://github.com/ryanoasis/nerd-fonts
