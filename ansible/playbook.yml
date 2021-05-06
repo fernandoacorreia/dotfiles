@@ -33,6 +33,6 @@
 
 - hosts: os_Ubuntu
   roles:
-    - docker
     - linux
     - linuxbrew
+    - docker
