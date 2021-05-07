@@ -19,12 +19,6 @@
     dest: "{{ home_dir }}/.linuxbrew/Homebrew"
     state: link
 
-- name: Create link for ~/.linuxbrew/Homebrew
-  file:
-    src: "{{ home_dir }}/dotfiles/vendor/brew"
-    dest: "{{ home_dir }}/.linuxbrew/Homebrew"
-    state: link
-
 - name: Create link for ~/.linuxbrew/bin/brew
   file:
     src: "{{ home_dir }}/.linuxbrew/Homebrew/bin/brew"
