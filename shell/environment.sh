@@ -49,3 +49,6 @@ fi
 if [ -f $HOME/.linuxbrew/bin/brew ]; then
   eval $($HOME/.linuxbrew/bin/brew shellenv)
 fi
+
+# mcfly
+export MCFLY_FUZZY=true
