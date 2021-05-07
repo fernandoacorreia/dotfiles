@@ -1,0 +1,11 @@
+# See https://github.com/cantino/mcfly
+---
+- name: Install mcfly tap
+  command: brew tap cantino/mcfly https://github.com/cantino/mcfly
+  args:
+    creates: "{{ homebrew_prefix }}/bin/mcfly"
+
+- name: Install mcfly
+  command: brew install mcfly
+  args:
+    creates: "{{ homebrew_prefix }}/bin/mcfly"

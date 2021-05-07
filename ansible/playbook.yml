@@ -36,3 +36,7 @@
     - linux
     - linuxbrew
     - docker
+
+- hosts: all
+  roles:
+    - mcfly
