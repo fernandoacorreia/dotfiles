@@ -21,4 +21,7 @@ fi
 
 source ~/.profile
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# https://github.com/cantino/mcfly
+if command -v mcfly &>/dev/null; then
+  eval "$(mcfly init zsh)"
+fi
