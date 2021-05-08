@@ -40,3 +40,4 @@
 - hosts: all
   roles:
     - mcfly
+    - gitui
