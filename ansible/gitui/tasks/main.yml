@@ -1,0 +1,6 @@
+# See https://github.com/extrawurst/gitui
+---
+- name: Install gitui
+  community.general.homebrew:
+    name: gitui
+    state: present
