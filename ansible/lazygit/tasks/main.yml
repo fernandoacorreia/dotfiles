@@ -1,0 +1,6 @@
+# See https://github.com/jesseduffield/lazygit#installation
+---
+- name: Install lazygit
+  community.general.homebrew:
+    name: jesseduffield/lazygit/lazygit
+    state: present
