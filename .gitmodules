@@ -24,4 +24,4 @@
 	url = git@github.com:fernandoacorreia/fzf.git
 [submodule "vendor/brew"]
 	path = vendor/brew
-	url = git@github.com:fernandoacorreia/brew.git
+	url = git@github.com:Homebrew/brew.git
