@@ -15,3 +15,12 @@
   - .gitconfig
   - editorconfig
 - stern zsh completions have been installed to: /opt/homebrew/share/zsh/site-functions
+- Neovim: LUA support
+  - https://crispgm.com/page/neovim-is-overpowering.html
+  - https://oroques.dev/notes/neovim-init/
+  - https://github.com/varbhat/dotfiles/tree/main/dot_config/nvim
+  - https://gitlab.com/yorickpeterse/dotfiles/-/tree/master/dotfiles/.config/nvim
+  - https://github.com/mjlbach/defaults.nvim
+- Neovim: Telescope
+  - https://crispgm.com/page/neovim-is-overpowering.html
+  - https://github.com/nvim-telescope/telescope.nvim
