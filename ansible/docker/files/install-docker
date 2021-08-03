@@ -9,9 +9,6 @@ set -o nounset -o errexit -o pipefail
 # The name of the user to be added to the docker group must be passed as an argument.
 USER_TO_ADD=$1
 
-# Directory of the current script
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-
 # Must be sudo
 if [[ $UID != 0 ]]; then
   echo "Please run this script with sudo."
@@ -31,7 +28,7 @@ apt-get install -y \
   software-properties-common
 
 # Add the GPG key for the official Docker repository
-cat "$SCRIPT_DIR/docker-gpg" | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+cat "/home/$USER_TO_ADD/dotfiles/ansible/docker/files/docker-gpg" | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
 # Add the Docker repository to APT sources
 echo \
