@@ -25,3 +25,5 @@ source ~/.profile
 if command -v mcfly &>/dev/null; then
   eval "$(mcfly init zsh)"
 fi
+
+# sdkman-init.sh is loaded in environment.sh
