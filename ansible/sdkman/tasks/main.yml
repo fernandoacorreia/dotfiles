@@ -1,0 +1,7 @@
+# sdkman -- See https://sdkman.io/install
+---
+- name: Install SDKMAN!
+  shell: curl -s "https://get.sdkman.io" | bash
+  args:
+    creates: "{{ home_dir }}/.sdkman/bin/sdkman-init.sh"
+

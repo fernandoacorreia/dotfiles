@@ -22,6 +22,7 @@
     - ruby
     - node
     - yarn
+    - sdkman
 
 - hosts: os_MacOSX
   roles:
