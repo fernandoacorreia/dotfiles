@@ -1,9 +1,10 @@
 ---
 - name: Install rbenv
-  become: "{{ become_option }}"
-  package:
-    name: "{{ item }}"
+  community.general.homebrew:
+    name: rbenv
     state: present
-  with_items:
-    - ruby-build
-    - rbenv
+
+- name: Install ruby-build
+  community.general.homebrew:
+    name: ruby-build
+    state: present
