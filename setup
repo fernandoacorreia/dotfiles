@@ -30,8 +30,6 @@ macos_install_cli_dev_tools() {
       echo "Waiting for installation to finish (look for a dialog window)"
       sleep 10
     done
-    # Required for pyenv: https://github.com/pyenv/pyenv/issues/1219
-    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS* -target /
   fi
 }
 
@@ -62,7 +60,7 @@ EOF
   # Start agent
   eval "$(ssh-agent -s)"
   # Add key
-  ssh-add -K "$KEYFILE"
+  ssh-add --apple-use-keychain "$KEYFILE"
 }
 
 macos_create_ssh_key() {

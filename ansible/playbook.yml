@@ -10,36 +10,36 @@
 - hosts: all
   roles:
     - common
-    - util
-    - shell
-    - neovim
-    - gh
-    - libpq
-    - stern
-    - tig
-    - pyenv
-    - fzf
-    - ruby
-    - node
-    - yarn
-    - sdkman
-
-- hosts: os_MacOSX
-  roles:
-    - cask
-    - hack-font
-    - iterm2
-    - sourcetree
-    - karabiner
-
-- hosts: os_Ubuntu
-  roles:
-    - linux
-    - linuxbrew
-    - docker
-
-- hosts: all
-  roles:
-    - mcfly
-    - gitui
-    - lazygit
+###     - util
+###     - shell
+###     - neovim
+###     - gh
+###     - libpq
+###     - stern
+###     - tig
+###     - pyenv
+###     - fzf
+###     - ruby
+###     - node
+###     - yarn
+###     - sdkman
+### 
+### - hosts: os_MacOSX
+###   roles:
+###     - cask
+###     - hack-font
+###     - iterm2
+###     - sourcetree
+###     - karabiner
+### 
+### - hosts: os_Ubuntu
+###   roles:
+###     - linux
+###     - linuxbrew
+###     - docker
+### 
+### - hosts: all
+###   roles:
+###     - mcfly
+###     - gitui
+###     - lazygit
