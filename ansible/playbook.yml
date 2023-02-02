@@ -10,7 +10,7 @@
 - hosts: all
   roles:
     - common
-###     - util
+    - util
 ###     - shell
 ###     - neovim
 ###     - gh
