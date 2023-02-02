@@ -12,13 +12,6 @@
   set_fact:
     become_option: "{{ 'yes' if package_needs_root == True else 'no' }}"
 
-# Work around https://github.com/ansible/ansible/issues/73887
-### - name: Set pkg_mgr for macOS
-###   when: distribution == 'MacOSX'
-###   set_fact:
-###     pkg_mgr: homebrew
-###     cacheable: yes
-
 - name: Set Homebrew directory
   set_fact:
     homebrew_prefix: "{{ lookup('env','HOMEBREW_PREFIX') }}"
