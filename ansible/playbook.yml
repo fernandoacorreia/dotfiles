@@ -19,11 +19,11 @@
     - libpq
     - stern
     - tig
-###     - fzf
-###     - node
-###     - yarn
-###     - sdkman
-###
+    - fzf
+    - node
+    - yarn
+    - sdkman
+
 ### - hosts: os_MacOSX
 ###   roles:
 ###     - cask

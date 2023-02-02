@@ -27,3 +27,5 @@ if command -v mcfly &>/dev/null; then
 fi
 
 # sdkman-init.sh is loaded in environment.sh
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
