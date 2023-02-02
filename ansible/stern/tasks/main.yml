@@ -2,7 +2,7 @@
 - name: Install stern on macOS
   when: distribution == 'MacOSX'
   package:
-    name: gh
+    name: stern
     state: present
 
 # See https://github.com/wercker/stern/releases

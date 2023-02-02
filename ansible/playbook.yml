@@ -16,14 +16,14 @@
     - shell
     - neovim
     - gh
-###     - libpq
-###     - stern
-###     - tig
+    - libpq
+    - stern
+    - tig
 ###     - fzf
 ###     - node
 ###     - yarn
 ###     - sdkman
-### 
+###
 ### - hosts: os_MacOSX
 ###   roles:
 ###     - cask
@@ -31,13 +31,13 @@
 ###     - iterm2
 ###     - sourcetree
 ###     - karabiner
-### 
+###
 ### - hosts: os_Ubuntu
 ###   roles:
 ###     - linux
 ###     - linuxbrew
 ###     - docker
-### 
+###
 - hosts: all
   roles:
 ###     - mcfly
