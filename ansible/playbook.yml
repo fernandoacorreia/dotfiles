@@ -24,22 +24,22 @@
     - yarn
     - sdkman
 
-### - hosts: os_MacOSX
-###   roles:
-###     - cask
-###     - hack-font
+- hosts: os_MacOSX
+  roles:
+    - cask
+    - hack-font
 ###     - iterm2
-###     - sourcetree
+    - sourcetree
 ###     - karabiner
-###
-### - hosts: os_Ubuntu
-###   roles:
-###     - linux
-###     - linuxbrew
-###     - docker
-###
+
+- hosts: os_Ubuntu
+  roles:
+    - linux
+    - linuxbrew
+    - docker
+
 - hosts: all
   roles:
-###     - mcfly
+    - mcfly
     - gitui
-###     - lazygit
+    - lazygit
