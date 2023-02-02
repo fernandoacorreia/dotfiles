@@ -11,7 +11,7 @@
   roles:
     - common
     - util
-###     - shell
+    - shell
 ###     - neovim
 ###     - gh
 ###     - libpq
@@ -38,8 +38,8 @@
 ###     - linuxbrew
 ###     - docker
 ### 
-### - hosts: all
-###   roles:
+- hosts: all
+  roles:
 ###     - mcfly
-###     - gitui
+    - gitui
 ###     - lazygit
