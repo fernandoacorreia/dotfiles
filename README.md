@@ -4,7 +4,7 @@ Machine setup.
 
 ## Supported OSes
 
-- macOS Monterey
+- macOS Monterey on Apple silicon
 - Ubuntu 20.04.2 LTS Focal Fossa
 
 ## Installing
