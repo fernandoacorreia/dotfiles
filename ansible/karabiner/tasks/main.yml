@@ -1,3 +1,8 @@
 ---
-- name: "Create symlink to karabiner configuration"
-  file: src={{ home_dir }}/dotfiles/config/karabiner dest={{ home_dir }}/.config/karabiner state=link
+- name: "Create Karabiner assets directory"
+  file:
+    path: "{{ home_dir }}/.config/karabiner/assets/complex_modifications"
+    state: directory
+
+- name: "Copy Karabiner Caps Lock to Command/Escape modification"
+  copy: src={{ home_dir }}/dotfiles/templates/karabiner/1674761234.json dest={{ home_dir }}/.config/karabiner/assets/complex_modifications/1674761234.json force=no

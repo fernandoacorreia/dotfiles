@@ -30,7 +30,7 @@
     - hack-font
 ###     - iterm2
     - sourcetree
-###     - karabiner
+    - karabiner
 
 - hosts: os_Ubuntu
   roles:
