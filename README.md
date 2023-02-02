@@ -29,4 +29,3 @@ cd ~/dotfiles
 git pull
 git submodule update --init --recursive
 ./setup
-```
