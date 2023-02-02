@@ -17,9 +17,9 @@
 ###     - libpq
 ###     - stern
 ###     - tig
-###     - pyenv
+    - pyenv
 ###     - fzf
-###     - ruby
+    - ruby
 ###     - node
 ###     - yarn
 ###     - sdkman
