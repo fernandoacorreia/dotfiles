@@ -32,16 +32,8 @@
     - software-properties-common
     - zsh
 
-# REPLACE WITH A TEMPLATE
-### - name: Create link for ~/.tmux.conf
-###   file:
-###     src: "{{ home_dir }}/dotfiles/home/tmux.conf"
-###     dest: "{{ home_dir }}/.tmux.conf"
-###     state: link
+- name: "Copy tmux configuration"
+  copy: src={{ home_dir }}/dotfiles/templates/tmux.conf dest={{ home_dir }}/.tmux.conf force=no
 
-# REPLACE WITH A TEMPLATE
-### - name: Create link for ~/.editorconfig
-###   file:
-###     src: "{{ home_dir }}/dotfiles/.editorconfig"
-###     dest: "{{ home_dir }}/.editorconfig"
-###     state: link
+- name: "Copy .editorconfig"
+  copy: src={{ home_dir }}/dotfiles/.editorconfig dest={{ home_dir }}/.editorconfig force=no
