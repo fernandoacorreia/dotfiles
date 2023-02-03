@@ -10,10 +10,8 @@
 - Ag support in neovim
 - gnubin
   - check "Add gnubin to PATH" in environment.sh (and only add it if on macOS)
-- golang
-- templates or symlinks?
-  - .gitconfig
-  - editorconfig
+- golang -- see https://github.com/fernandoacorreia/macfiles/blob/master/shell/environment.sh#L28-L31
+- .gitconfig template
 - stern zsh completions have been installed to: /opt/homebrew/share/zsh/site-functions
 - Neovim: LUA support
   - https://crispgm.com/page/neovim-is-overpowering.html
