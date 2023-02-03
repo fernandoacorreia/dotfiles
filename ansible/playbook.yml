@@ -11,15 +11,15 @@
   roles:
     - common
     - util
+    - ruby
+    - pyenv
     - shell
     - neovim
     - gh
     - libpq
     - stern
     - tig
-    - pyenv
     - fzf
-    - ruby
     - node
     - yarn
     - sdkman
