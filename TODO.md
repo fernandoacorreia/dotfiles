@@ -23,4 +23,4 @@
   - https://crispgm.com/page/neovim-is-overpowering.html
   - https://github.com/nvim-telescope/telescope.nvim
 - ~/.ssh/config template
-
+- install podman and alias to docker

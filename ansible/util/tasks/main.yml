@@ -11,6 +11,7 @@
     - htop
     - jq
     - nmap
+    - pstree
     - ripgrep
     - telnet
     - tldr
