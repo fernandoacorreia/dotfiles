@@ -22,9 +22,5 @@
 - Neovim: Telescope
   - https://crispgm.com/page/neovim-is-overpowering.html
   - https://github.com/nvim-telescope/telescope.nvim
-- zsh autosuggestions
-  - Clone: git clone https://github.com/zsh-users/zsh-autosuggestions
-  - ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-  - Add plugin to .zshrc file: plugins=(zsh-autosuggestions)
 - ~/.ssh/config template
 
