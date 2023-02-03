@@ -28,7 +28,7 @@
   roles:
     - cask
     - hack-font
-###     - iterm2
+    - iterm2
     - sourcetree
     - karabiner
 

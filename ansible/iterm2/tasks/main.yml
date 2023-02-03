@@ -1,5 +1,11 @@
 ---
+- name: "Check iTerm2 app installation status"
+  stat:
+    path: "/Applications/iTerm.app"
+  register: "iterm_app_check"
+
 - name: Install iTerm2
   homebrew_cask:
     name: iterm2
     state: present
+  when: not iterm_app_check.stat.exists
