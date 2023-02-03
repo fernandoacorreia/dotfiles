@@ -6,7 +6,7 @@
       package:
         name: fzf
         state: present
-    - name: Set fzf director on macOS
+    - name: Set fzf directory on macOS
       set_fact:
         fzf_dir: "{{ homebrew_prefix }}/opt/fzf"
 
