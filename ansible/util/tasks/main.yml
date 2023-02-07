@@ -10,6 +10,8 @@
     - git
     - htop
     - jq
+    - k9s
+    - kubernetes-cli
     - nmap
     - pstree
     - ripgrep
