@@ -24,3 +24,4 @@
   - https://github.com/nvim-telescope/telescope.nvim
 - ~/.ssh/config template
 - install podman and alias to docker
+- https://zaiste.net/posts/shell-commands-rust/
