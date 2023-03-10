@@ -15,14 +15,10 @@
     - pyenv
     - shell
     - neovim
-    - gh
     - libpq
-    - stern
-    - tig
     - fzf
-    - node
-    - yarn
-    - sdkman
+#     - node
+#     - sdkman
 
 - hosts: os_MacOSX
   roles:
