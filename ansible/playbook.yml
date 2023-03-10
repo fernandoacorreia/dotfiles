@@ -18,7 +18,7 @@
     - libpq
     - fzf
 #     - node
-#     - sdkman
+    - sdkman
 
 - hosts: os_MacOSX
   roles:
