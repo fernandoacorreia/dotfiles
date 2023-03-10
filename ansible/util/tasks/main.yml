@@ -25,6 +25,7 @@
     - kubernetes-cli
     - pstree
     - ripgrep
+    - stern
     - tldr
     - watch
 
