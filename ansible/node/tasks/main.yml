@@ -1,4 +1,7 @@
 ---
+
+TODO: Detect node via "command" and don't install if present.
+
 - name: Install node on macOS
   when: distribution == 'MacOSX'
   package:

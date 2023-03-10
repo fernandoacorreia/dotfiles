@@ -17,7 +17,7 @@
     - neovim
     - libpq
     - fzf
-#     - node
+    - node
     - sdkman
 
 - hosts: os_MacOSX
