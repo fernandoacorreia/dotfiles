@@ -40,3 +40,5 @@
       shell: "{{ home_dir }}/dotfiles/vendor/pyenv-installer/bin/pyenv-installer"
       args:
         creates: "{{ home_dir }}/.pyenv"
+
+# Not implemented for Amazon Linux 2
