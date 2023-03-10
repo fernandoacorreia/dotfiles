@@ -6,6 +6,7 @@ Machine setup.
 
 - macOS Monterey on Apple silicon
 - Ubuntu 20.04.2 LTS Focal Fossa
+- Amazon Linux 2
 
 ## Installing
 
