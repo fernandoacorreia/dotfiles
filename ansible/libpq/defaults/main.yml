@@ -2,5 +2,7 @@
 packages:
   default:
     - libpq
+  Amazon:
+    - postgresql-libs
   Ubuntu:
     - libpq-dev

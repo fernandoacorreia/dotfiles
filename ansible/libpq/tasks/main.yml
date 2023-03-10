@@ -1,5 +1,5 @@
 ---
-- name: Install libpq
+- name: Install Postgres C Library
   become: "{{ package_needs_root }}"
   package:
     name: '{{ item }}'
