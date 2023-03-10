@@ -29,6 +29,7 @@
     - tig
     - tldr
     - watch
+    - yarn
 
 - name: Install Ubuntu utilities
   when: distribution == 'Ubuntu'
