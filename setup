@@ -142,6 +142,11 @@ install_prerequisites() {
     macos_install_git
     macos_create_ssh_key
     macos_add_ssh_key_to_agent
+  elif cat /etc/*release | grep ^NAME | grep LMDE &>/dev/null; then
+    ubuntu_install_git
+    ubuntu_install_pip3
+    linux_create_ssh_key
+    linux_add_ssh_key_to_agent
   elif cat /etc/*release | grep ^NAME | grep Ubuntu &>/dev/null; then
     ubuntu_install_git
     ubuntu_install_pip3
