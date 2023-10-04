@@ -2,6 +2,9 @@
 if [ -x "/opt/homebrew/bin/brew" ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
+if [[ -d $HOME/.linuxbrew/bin ]]; then
+  eval $($HOME/.linuxbrew/bin/brew shellenv)
+fi
 
 # Import secrets
 if test -n "$(find ~/secrets -maxdepth 1 -name '*.sh' -print -quit)"  # https://stackoverflow.com/a/7702334

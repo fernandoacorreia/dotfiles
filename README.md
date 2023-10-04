@@ -4,8 +4,8 @@ Machine setup.
 
 ## Supported OSes
 
-- macOS Monterey or Ventura on Apple silicon
-- Ubuntu 20.04.2 LTS Focal Fossa
+- macOS Ventura on Apple silicon
+- LMDE 6 "Faye" (Linux Mint Debian Edition) - Debian 12 (bookworm)
 
 ## Installing
 

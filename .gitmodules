@@ -16,9 +16,6 @@
 [submodule "vendor/fzf.vim"]
 	path = vendor/fzf.vim
 	url = git@github.com:fernandoacorreia/fzf.vim.git
-[submodule "vendor/pyenv-installer"]
-	path = vendor/pyenv-installer
-	url = git@github.com:fernandoacorreia/pyenv-installer.git
 [submodule "vendor/fzf"]
 	path = vendor/fzf
 	url = git@github.com:fernandoacorreia/fzf.git
