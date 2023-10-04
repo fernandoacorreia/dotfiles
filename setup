@@ -75,20 +75,9 @@ macos_create_ssh_key() {
   fi
 }
 
-ubuntu_install_git() {
-  if missing_executable git; then
-    echo "Installing git"
-    sudo apt-get update
-    sudo apt-get install -y git
-  fi
-}
-
-ubuntu_install_pip3() {
-  if missing_executable pip3; then
-    echo "Installing pip3"
-    sudo apt-get update
-    sudo apt-get install -y python3-pip
-  fi
+lmde_install_packages() {
+  sudo apt-get update
+  sudo apt-get install -y git
 }
 
 linux_add_ssh_key_to_agent() {
@@ -128,40 +117,48 @@ amazonlinux_install_python3() {
 
 install_ansible() {
   if missing_executable ansible-playbook; then
-    upgrade_pip
     echo "Installing Ansible"
-    pip3 install ansible
+    brew install ansible
   fi
 }
 
+# Sets up linuxbrew on Linux systems and sets the required environment variables on the current shell for Ansible to use it.
+setup_linuxbrew() {
+  if [[ ! -d $HOME/.linuxbrew/bin ]]; then
+    echo "Creating linuxbrew"
+    mkdir -p $HOME/.linuxbrew/bin
+    ln -s $HOME/dotfiles/vendor/brew $HOME/.linuxbrew/Homebrew
+    ln -s $HOME/dotfiles/vendor/brew/bin/brew $HOME/.linuxbrew/bin/brew
+  fi
+}
+
+
 install_prerequisites() {
   mkdir -p $HOME/.ssh
+  # macOS
   if [ "${OSTYPE//[0-9.]/}" == "darwin" ]; then
     macos_install_cli_dev_tools
     macos_install_brew
     macos_install_git
     macos_create_ssh_key
     macos_add_ssh_key_to_agent
+  # Linux Mint Debian Edition
   elif cat /etc/*release | grep ^NAME | grep LMDE &>/dev/null; then
-    ubuntu_install_git
-    ubuntu_install_pip3
+    lmde_install_packages
     linux_create_ssh_key
     linux_add_ssh_key_to_agent
-  elif cat /etc/*release | grep ^NAME | grep Ubuntu &>/dev/null; then
-    ubuntu_install_git
-    ubuntu_install_pip3
-    linux_create_ssh_key
-    linux_add_ssh_key_to_agent
+    setup_linuxbrew
+  # Amazon Linux
   elif cat /etc/*release | grep ^NAME | grep 'Amazon Linux' &>/dev/null; then
     amazonlinux_install_git
     amazonlinux_install_python3
     linux_create_ssh_key
     linux_add_ssh_key_to_agent
+    setup_linuxbrew
   else
     echo "Unsupported OS"
     exit 1
   fi
-  install_ansible
 }
 
 clone_repository() {
@@ -172,12 +169,14 @@ clone_repository() {
   fi
 }
 
-upgrade_pip() {
-  echo "Upgrading pip3"
-  # sudo python3 -m pip install --upgrade pip
-  sudo --set-home pip3 install --upgrade pip
-  hash -r # Clear command cache because pip3 may have been moved from /usr/bin to /usr/local/bin
-  pip3 --version
+set_environment() {
+  # On Linux, on the first run, the environment for running brew must be set up before installing or running Ansible.
+  # This can only be done after the repo has been cloned (because of the symlinks).
+  if [[ -d $HOME/.linuxbrew/bin ]]; then
+    echo "Setting environment for linuxbrew"
+    export PATH=$PATH:$HOME/.linuxbrew/bin
+    eval $($HOME/.linuxbrew/bin/brew shellenv)
+  fi
 }
 
 run_ansible() {
@@ -190,4 +189,6 @@ run_ansible() {
 
 install_prerequisites
 clone_repository
+set_environment
+install_ansible
 run_ansible
