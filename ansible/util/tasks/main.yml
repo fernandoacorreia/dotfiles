@@ -10,10 +10,7 @@
     - git
     - htop
     - jq
-    - k9s
-    - kubernetes-cli
     - nmap
-    - pstree
     - ripgrep
     - telnet
     - tldr
@@ -21,18 +18,18 @@
     - tree
     - watch
 
-- name: Install Ubuntu utilities
-  when: distribution == 'Ubuntu'
+- name: Install LMDE utilities
+  when: distribution == 'LMDE'
   become: yes
   package:
     name: "{{ item }}"
     state: present
   with_items:
-    - keychain
+#    - keychain
     - net-tools
-    - python3-apt
-    - python3-venv
-    - software-properties-common
+#    - python3-apt
+#    - python3-venv
+#    - software-properties-common
     - zsh
 
 - name: "Copy tmux configuration"

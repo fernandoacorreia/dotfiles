@@ -1,0 +1,10 @@
+---
+- name: Install utilities from Homebrew
+  community.general.homebrew:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - k9s
+    - kubernetes-cli
+    - pstree
+

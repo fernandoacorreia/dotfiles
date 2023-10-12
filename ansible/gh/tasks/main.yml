@@ -1,20 +1,5 @@
 ---
-# See https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-- name: Add github repository key on Ubuntu
-  when: distribution == 'Ubuntu'
-  become: yes
-  ansible.builtin.apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: C99B11DEB97541F0
-
-- name: Add github repository on Ubuntu
-  when: distribution == 'Ubuntu'
-  become: yes
-  apt_repository:
-    repo: "deb https://cli.github.com/packages stable main"
-
-- name: Install gh
-  become: "{{ become_option }}"
-  package:
+- name: Install GitHub command-line tool
+  community.general.homebrew:
     name: gh
     state: present

@@ -11,6 +11,14 @@
   roles:
     - common
     - util
+
+- hosts: os_LMDE
+  roles:
+    - linux
+    - docker
+
+- hosts: all
+  roles:
     - ruby
     - pyenv
     - shell
@@ -32,14 +40,9 @@
     - sourcetree
     - karabiner
 
-- hosts: os_Ubuntu
-  roles:
-    - linux
-    - linuxbrew
-    - docker
-
 - hosts: all
   roles:
+    - brew-utils
     - mcfly
     - gitui
     - lazygit
