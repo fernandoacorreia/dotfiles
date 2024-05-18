@@ -1,0 +1,14 @@
+{prnt}>{x1}{-shift}{-lwin}{3}{+shift}{+lwin}
+{hk1}>{x1}{-ctrl}{-lwin}{q}{+ctrl}{+lwin}
+{hk2}>{x1}{-lwin}{tab}{+lwin}
+{hk3}>{x1}{-lwin}{a}{+lwin}
+{hk4}>{x1}{-lwin}{z}{+lwin}
+{hk5}>{x1}{-lwin}{x}{+lwin}
+[hk6]>[del]
+{hk7}>{x1}{-lwin}{c}{+lwin}
+{hk8}>{x1}{-lwin}{v}{+lwin}
+{hk10}>{x1}{-shift}{-lwin}{/}{+shift}{+lwin}
+[lwin]>[alt]
+[lalt]>[lwin]
+[ralt]>[lwin]
+[rctrl]>[ctrl]
