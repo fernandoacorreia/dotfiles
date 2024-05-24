@@ -25,3 +25,6 @@
 [submodule "vendor/tpm"]
 	path = vendor/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "vendor/vim-tmux-navigator"]
+	path = vendor/vim-tmux-navigator
+	url = git@github.com:christoomey/vim-tmux-navigator.git
