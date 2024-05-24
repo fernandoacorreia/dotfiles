@@ -22,3 +22,6 @@
 [submodule "vendor/brew"]
 	path = vendor/brew
 	url = git@github.com:Homebrew/brew.git
+[submodule "vendor/tpm"]
+	path = vendor/tpm
+	url = https://github.com/tmux-plugins/tpm
