@@ -28,3 +28,9 @@
 [submodule "vendor/vim-tmux-navigator"]
 	path = vendor/vim-tmux-navigator
 	url = git@github.com:christoomey/vim-tmux-navigator.git
+[submodule "vendor/tmux-resurrect"]
+	path = vendor/tmux-resurrect
+	url = git@github.com:tmux-plugins/tmux-resurrect.git
+[submodule "vendor/tmux-continuum"]
+	path = vendor/tmux-continuum
+	url = git@github.com:tmux-plugins/tmux-continuum.git
