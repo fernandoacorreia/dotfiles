@@ -35,6 +35,12 @@
 - name: "Copy tmux configuration"
   copy: src={{ home_dir }}/dotfiles/templates/tmux.conf dest={{ home_dir }}/.tmux.conf force=no
 
+- name: Create symlink for .tmux
+  file:
+    src: "{{ home_dir }}/dotfiles/config/tmux"
+    dest: "{{ home_dir }}/.tmux"
+    state: link
+
 - name: "Copy .editorconfig"
   copy: src={{ home_dir }}/dotfiles/.editorconfig dest={{ home_dir }}/.editorconfig force=no
 
