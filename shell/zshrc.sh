@@ -30,3 +30,6 @@ fi
 # sdkman-init.sh is loaded in environment.sh
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# gvm (Go Version Manager)
+[[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
