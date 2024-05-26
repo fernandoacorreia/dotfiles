@@ -33,3 +33,6 @@ fi
 
 # gvm (Go Version Manager)
 [[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
+
+# zoxide
+eval "$(zoxide init zsh --cmd cd)"
