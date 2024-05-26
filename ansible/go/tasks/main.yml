@@ -1,0 +1,45 @@
+---
+- name: Install packages required by gvm
+  homebrew:
+    name:
+      - bison
+      - curl
+      - git
+    state: present
+    update_homebrew: yes
+
+- name: Create a temporary directory for downloading the gvm installer script
+  tempfile:
+    state: directory
+    suffix: gvm_install
+  register: temp_dir
+
+- name: Download the gvm installer script
+  get_url:
+    url: https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer
+    dest: "{{ temp_dir.path }}/gvm-installer"
+    mode: '0755'
+
+- name: Run the gvm installer script
+  command: GVM_NO_UPDATE_PROFILE=true bash {{ temp_dir.path }}/gvm-installer
+  args:
+    creates: "{{ home_dir }}/.gvm"
+
+# Workaround for https://github.com/moovweb/gvm/issues/287
+- name: Install Go via Homebrew for bootstrapping
+  homebrew:
+    name:
+      - go
+    state: present
+
+- name: Install Go using gvm
+  shell: "source {{ home_dir }}/.gvm/scripts/gvm && gvm install {{ go_version }}"
+
+- name: Set default Go version
+  shell: "source {{ home_dir }}/.gvm/scripts/gvm && gvm use {{ go_version }} --default"
+
+- name: Uninstall Go from Homebrew
+  homebrew:
+    name:
+      - go
+    state: absent
