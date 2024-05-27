@@ -27,5 +27,10 @@ alias tmux='TERM=xterm-256color tmux'
 # Clear screen (when Ctrl+L is remapped)
 alias cls=clear
 
-# Podman / Docker
-alias docker=podman
+# Check if podman is installed
+if command -v podman &> /dev/null
+then
+    # Create alias for docker to podman
+    alias docker='podman'
+fi
+
