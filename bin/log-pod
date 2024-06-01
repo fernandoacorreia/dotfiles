@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# Saves logs for all containers in a pod.
+#
+set -o nounset -o errexit -o pipefail
+
+# Function to print the usage
+usage() {
+  echo "Usage: $0 [-n namespace] <pod-name>"
+  exit 1
+}
+
+# Default namespace is empty
+NAMESPACE_ARG=""
+NAMESPACE_DISPLAY=""
+
+# Parse the arguments
+while getopts ":n:" opt; do
+  case $opt in
+    n)
+      NAMESPACE_ARG="--namespace $OPTARG"
+      NAMESPACE_DISPLAY="in namespace $OPTARG "
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND -1))
+
+# Check if a pod name was passed as an argument
+if [ -z "${1-}" ]; then
+  echo "Error: No pod name provided."
+  usage
+fi
+
+# Assign the remaining argument to a variable
+POD_NAME=$1
+
+# Function to check if the pod is ready
+is_pod_ready() {
+  STATUS=$(kubectl get pod $POD_NAME $NAMESPACE_ARG -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+  if [ "$STATUS" == "True" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# Wait until the pod is ready
+while ! is_pod_ready; do
+  echo "Pod $POD_NAME is not ready yet. Checking again in 5 seconds..."
+  sleep 5
+done
+
+LOG_DIR="$HOME/scratch/log"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/$POD_NAME.log"
+echo "Logging from all container in pod $POD_NAME ${NAMESPACE_DISPLAY}to $LOG_FILE"
+
+# Logs from all containers in a pod, prefixing each log line with the timestamp and the container name. Saves the log to a file.
+kubectl logs -f $POD_NAME $NAMESPACE_ARG --all-containers=true --prefix=true | while read line; do echo "$(date '+%Y-%m-%d %H:%M:%S') $line"; done | tee $LOG_FILE
