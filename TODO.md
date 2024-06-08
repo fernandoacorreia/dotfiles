@@ -4,9 +4,7 @@
     - Install Meslo nerd font:
       https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k
       - nerd fonts: https://github.com/ryanoasis/nerd-fonts
-    - p10k configure
-      - customize zsh prompt to display hostname and timestamp
-    - Migrate from purepower to Lean style - see https://github.com/romkatv/powerlevel10k/blob/master/config/p10k-lean.zsh
+    - Make sure that hostname is displayed on ssh sessions
   - With Oh My Posh
     - Zen prompt:
       - https://github.com/dreamsofautonomy/zen-omp/blob/main/zen.toml -- see https://www.youtube.com/watch?v=9U8LCjuQzdc
