@@ -10,7 +10,7 @@ antigen bundle zsh-users/zsh-syntax-highlighting
 antigen bundle zsh-users/zsh-autosuggestions
 
 antigen theme romkatv/powerlevel10k # https://github.com/romkatv/powerlevel10k#antigen
-source ~/dotfiles/vendor/.purepower
+source ~/dotfiles/vendor/purepower
 
 antigen apply
 
