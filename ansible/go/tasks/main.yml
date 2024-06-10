@@ -21,7 +21,7 @@
     mode: '0755'
 
 - name: Run the gvm installer script
-  command: GVM_NO_UPDATE_PROFILE=true bash {{ temp_dir.path }}/gvm-installer
+  shell: GVM_NO_UPDATE_PROFILE=true {{ temp_dir.path }}/gvm-installer
   args:
     creates: "{{ home_dir }}/.gvm"
 
@@ -37,9 +37,3 @@
 
 - name: Set default Go version
   shell: "source {{ home_dir }}/.gvm/scripts/gvm && gvm use {{ go_version }} --default"
-
-- name: Uninstall Go from Homebrew
-  homebrew:
-    name:
-      - go
-    state: absent
