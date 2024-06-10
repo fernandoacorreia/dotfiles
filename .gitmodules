@@ -34,3 +34,6 @@
 [submodule "vendor/tmux-continuum"]
 	path = vendor/tmux-continuum
 	url = git@github.com:tmux-plugins/tmux-continuum.git
+[submodule "vendor/dracula-tmux"]
+	path = vendor/dracula-tmux
+	url = git@github.com:fernandoacorreia/dracula-tmux.git
