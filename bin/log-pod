@@ -58,10 +58,14 @@ while ! is_pod_ready; do
   sleep 5
 done
 
-LOG_DIR="$HOME/scratch/log"
+LOG_DIR="$HOME/scratch/log/$POD_NAME"
 mkdir -p "$LOG_DIR"
+
+kubectl get pod $POD_NAME $NAMESPACE_ARG -o yaml > $LOG_DIR/$POD_NAME.yaml
+kubectl describe pod $POD_NAME $NAMESPACE_ARG > $LOG_DIR/$POD_NAME-describe.txt
+
 LOG_FILE="$LOG_DIR/$POD_NAME.log"
 echo "Logging from all container in pod $POD_NAME ${NAMESPACE_DISPLAY}to $LOG_FILE"
 
 # Logs from all containers in a pod, prefixing each log line with the timestamp and the container name. Saves the log to a file.
-kubectl logs -f $POD_NAME $NAMESPACE_ARG --all-containers=true --prefix=true | while read line; do echo "$(date '+%Y-%m-%d %H:%M:%S') $line"; done | tee $LOG_FILE
+kubectl logs -f $POD_NAME $NAMESPACE_ARG --all-containers=true --prefix=true --timestamps=true | tee $LOG_FILE
