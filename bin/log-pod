@@ -54,6 +54,10 @@ is_pod_ready() {
 
 # Wait until the pod is ready
 while ! is_pod_ready; do
+  BACK_OFF_MESSAGE=$(kubectl get events --field-selector involvedObject.kind=Pod,involvedObject.name=$POD_NAME $NAMESPACE_ARG -o json | jq '.items[] | select(.reason=="BackOff") | .message')
+  if [ ! -z "$BACK_OFF_MESSAGE" ]; then
+    echo $BACK_OFF_MESSAGE
+  fi
   echo "Pod $POD_NAME is not ready yet. Checking again in 5 seconds..."
   sleep 5
 done
