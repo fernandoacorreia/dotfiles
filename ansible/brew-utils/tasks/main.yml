@@ -6,5 +6,6 @@
   with_items:
     - k9s
     - kubernetes-cli
+    - pillow
     - pstree
     - zoxide

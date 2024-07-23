@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+#
+# Requires:
+#   python3 -m pip install --upgrade Pillow
+# or:
+#   brew install pillow
+#
+import os
+import argparse
+from PIL import Image
+
+def convert_png_to_jpg(directory, quality=95):
+    # Iterate through all files in the directory
+    for filename in os.listdir(directory):
+        if filename.lower().endswith('.png'):
+            # Open the PNG image
+            png_path = os.path.join(directory, filename)
+            with Image.open(png_path) as img:
+                # Convert to RGB if the image is in RGBA mode
+                if img.mode == 'RGBA':
+                    img = img.convert('RGB')
+
+                # Create the new filename with .jpg extension
+                jpg_filename = os.path.splitext(filename)[0] + '.jpg'
+                jpg_path = os.path.join(directory, jpg_filename)
+
+                # Save as JPG with the specified quality
+                img.save(jpg_path, 'JPEG', quality=quality)
+
+            print(f'Converted: {filename} -> {jpg_filename}')
+
+def main():
+    parser = argparse.ArgumentParser(description='Convert PNG files to JPG in the current directory.')
+    parser.add_argument('-q', '--quality', type=int, default=95, help='JPEG quality (1-100, default: 95)')
+    args = parser.parse_args()
+
+    if args.quality < 1 or args.quality > 100:
+        print("Error: Quality must be between 1 and 100.")
+        return
+
+    current_directory = os.getcwd()
+    convert_png_to_jpg(current_directory, args.quality)
+
+if __name__ == "__main__":
+    main()
