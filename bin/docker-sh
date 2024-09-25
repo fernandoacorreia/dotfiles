@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Runs sh in a temporary container.
+#
+set -o nounset -o errexit -o pipefail
+
+docker run --rm -it --user=root --entrypoint=/bin/sh $1
