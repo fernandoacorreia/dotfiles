@@ -31,3 +31,4 @@
 - ~/.ssh/config template
 - install podman and alias to docker
 - https://zaiste.net/posts/shell-commands-rust/
+- delta, a diff tool: https://github.com/dandavison/delta
