@@ -44,5 +44,8 @@
 - name: "Copy .editorconfig"
   copy: src={{ home_dir }}/dotfiles/.editorconfig dest={{ home_dir }}/.editorconfig force=no
 
+- name: "Copy .gitconfig"
+  copy: src={{ home_dir }}/dotfiles/.gitconfig dest={{ home_dir }}/.gitconfig force=no
+
 - name: "Copy .ideavimrc"
   copy: src={{ home_dir }}/dotfiles/.ideavimrc dest={{ home_dir }}/.ideavimrc force=no
