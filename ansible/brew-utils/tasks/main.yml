@@ -8,4 +8,5 @@
     - kubernetes-cli
     - pillow
     - pstree
+    - uv
     - zoxide
