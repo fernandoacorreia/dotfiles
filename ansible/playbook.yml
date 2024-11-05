@@ -28,7 +28,6 @@
     - stern
     - tig
     - fzf
-    - node
     - yarn
     - sdkman
     - go
