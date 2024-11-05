@@ -1,9 +1,13 @@
-# See https://github.com/pyenv/pyenv
 ---
-- name: Install pyenv with Homebrew
+- name: Install development tools and languages
   community.general.homebrew:
     name: "{{ item }}"
     state: present
   with_items:
+    - nvm
     - pyenv
     - pyenv-virtualenv
+    - rbenv
+    - ruby-build
+    - uv
+    - yarn

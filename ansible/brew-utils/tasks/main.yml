@@ -7,8 +7,6 @@
     - awscli
     - k9s
     - kubernetes-cli
-    - nvm
     - pillow
     - pstree
-    - uv
     - zoxide
