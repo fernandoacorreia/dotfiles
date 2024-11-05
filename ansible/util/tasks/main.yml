@@ -18,8 +18,8 @@
     - tree
     - watch
 
-- name: Install LMDE utilities
-  when: distribution == 'LMDE'
+- name: Install LMDE and Ubuntu utilities
+  when: ansible_facts['distribution'] in ['LMDE', 'Ubuntu']
   become: yes
   package:
     name: "{{ item }}"

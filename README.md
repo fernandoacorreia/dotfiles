@@ -6,6 +6,7 @@ Machine setup.
 
 - macOS Ventura on Apple silicon
 - LMDE 6 "Faye" (Linux Mint Debian Edition) - Debian 12 (bookworm)
+- Ubuntu 22.04 "Jammy Jellyfish"
 
 ## Installing
 

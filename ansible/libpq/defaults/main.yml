@@ -4,3 +4,5 @@ packages:
     - libpq
   LMDE:
     - libpq-dev
+  Ubuntu:
+    - libpq-dev
