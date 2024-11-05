@@ -1,5 +1,0 @@
----
-- name: Install yarn with Homebrew
-  community.general.homebrew:
-    name: yarn
-    state: present

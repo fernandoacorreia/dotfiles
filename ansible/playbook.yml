@@ -7,31 +7,19 @@
       group_by:
         key: os_{{ ansible_facts['distribution'] }}
 
+# Basic settings and utilities
 - hosts: all
   roles:
     - common
     - util
 
+# Linux settings and utilities
 - hosts: os_LMDE:os_Ubuntu
   roles:
     - linux
     - docker
 
-- hosts: all
-  roles:
-    - ruby
-    - pyenv
-    - shell
-    - neovim
-    - gh
-    - libpq
-    - stern
-    - tig
-    - fzf
-    - yarn
-    - sdkman
-    - go
-
+# Mac settings and utilities
 - hosts: os_MacOSX
   roles:
     - cask
@@ -40,9 +28,24 @@
     - sourcetree
     - karabiner
 
+# General utilities
 - hosts: all
   roles:
     - brew-utils
-    - mcfly
+    - fzf
+    - gh
     - gitui
     - lazygit
+    - libpq
+    - mcfly
+    - neovim
+    - shell
+    - stern
+    - tig
+
+# Development tools and languages
+- hosts: all
+  roles:
+    - go
+    - sdkman
+    - dev-tools
