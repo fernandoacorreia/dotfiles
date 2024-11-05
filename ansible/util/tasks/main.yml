@@ -15,7 +15,9 @@
     - tldr
     - tmux
     - tree
+    - unzip
     - watch
+    - zip
 
 - name: Install LMDE and Ubuntu utilities
   when: ansible_facts['distribution'] in ['LMDE', 'Ubuntu']
