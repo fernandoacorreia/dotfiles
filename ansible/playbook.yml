@@ -12,7 +12,7 @@
     - common
     - util
 
-- hosts: os_LMDE
+- hosts: os_LMDE:os_Ubuntu
   roles:
     - linux
     - docker
