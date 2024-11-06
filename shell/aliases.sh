@@ -8,9 +8,12 @@ alias gpf='git push -f origin HEAD'
 alias gpu='git push -u origin HEAD'
 alias gst='git status'
 
-# Color in diff and grep
+# Color output
 alias diff="colordiff"
-alias grep="grep --color=always"
+alias grep="grep --color=auto"
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias ls='ls --color=auto'
 
 # Kubernetes
 alias k='kubectl'
