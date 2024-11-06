@@ -48,5 +48,6 @@
   roles:
     - go
     - nvm
+    - node
     - sdkman
     - dev-tools
