@@ -47,5 +47,6 @@
 - hosts: all
   roles:
     - go
+    - nvm
     - sdkman
     - dev-tools

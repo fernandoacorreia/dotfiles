@@ -1,0 +1,23 @@
+- name: Install NVM
+  block:
+    - name: Check if NVM is already installed
+      stat:
+        path: "{{ home_dir }}/.nvm/nvm.sh"
+      register: nvm_installed
+
+    - name: Download NVM installation script
+      get_url:
+        url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
+        dest: /tmp/nvm-install.sh
+        mode: '0755'
+      when: not nvm_installed.stat.exists
+
+    - name: Execute NVM installation script
+      shell: bash /tmp/nvm-install.sh
+      when: not nvm_installed.stat.exists
+
+    - name: Clean up installation script
+      file:
+        path: /tmp/nvm-install.sh
+        state: absent
+      when: not nvm_installed.stat.exists
