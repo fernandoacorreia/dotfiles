@@ -19,6 +19,11 @@ export EDITOR=nvim
 # Add bin directory to path
 export PATH="$HOME/bin:$HOME/dotfiles/bin:$PATH"
 
+# Add .local/bin directory to path
+if [ -d $HOME/.local/bin ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 # Add gnubin to PATH
 export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
 
