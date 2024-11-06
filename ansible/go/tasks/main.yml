@@ -34,6 +34,10 @@
 
 - name: Install Go using gvm
   shell: "source {{ home_dir }}/.gvm/scripts/gvm && gvm install {{ go_version }}"
+  args:
+    executable: /bin/bash
 
 - name: Set default Go version
   shell: "source {{ home_dir }}/.gvm/scripts/gvm && gvm use {{ go_version }} --default"
+  args:
+    executable: /bin/bash
