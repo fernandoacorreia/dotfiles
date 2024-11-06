@@ -15,6 +15,10 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias ls='ls --color=auto'
 
+# ls aliases
+alias la='ls -A'
+alias ll='ls -alh'
+
 # Kubernetes
 alias k='kubectl'
 
