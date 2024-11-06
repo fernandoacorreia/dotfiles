@@ -109,11 +109,8 @@ install_ansible() {
 
 # Sets up linuxbrew on Linux systems and sets the required environment variables on the current shell for Ansible to use it.
 setup_linuxbrew() {
-  if [[ ! -d $HOME/.linuxbrew/bin ]]; then
-    echo "Creating linuxbrew"
-    mkdir -p $HOME/.linuxbrew/bin
-    ln -s $HOME/dotfiles/vendor/brew $HOME/.linuxbrew/Homebrew
-    ln -s $HOME/dotfiles/vendor/brew/bin/brew $HOME/.linuxbrew/bin/brew
+  if [[ ! -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
 }
 
@@ -150,10 +147,9 @@ clone_repository() {
 set_environment() {
   # On Linux, on the first run, the environment for running brew must be set up before installing or running Ansible.
   # This can only be done after the repo has been cloned (because of the symlinks).
-  if [[ -d $HOME/.linuxbrew/bin ]]; then
+  if [[ -d "/home/linuxbrew/.linuxbrew/bin" ]]; then
     echo "Setting environment for linuxbrew"
-    export PATH=$PATH:$HOME/.linuxbrew/bin
-    eval $($HOME/.linuxbrew/bin/brew shellenv)
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   fi
 }
 
