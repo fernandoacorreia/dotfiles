@@ -43,3 +43,19 @@ eval "$(zoxide init zsh --cmd cd)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+function update_gpg_tty() {
+  # Makes sure that GPG will prompt for a password in the correct TTY device.
+  # It's useful for Git operations that require GPG signing, like signed commits.
+  export GPG_TTY=$(tty)
+  if [ -n "$TMUX" ]; then
+    # Tmux creates a more complex terminal environment with multiple virtual TTYs,
+    # and it maintains a persistent session that can detach/reattach.
+    # updatestartuptty is a command that tells the GPG agent which TTY to use for pinentry (password prompt).
+    # When switching to a previous Tmux window or pane, it might be necessary to re-run this command manually.
+    gpg-connect-agent updatestartuptty /bye >/dev/null
+  fi
+}
+
+# Add our function to precmd hooks.
+precmd_functions+=(update_gpg_tty)

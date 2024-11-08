@@ -66,15 +66,3 @@ export SDKMAN_DIR="$HOME/.sdkman"
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# This helps GPG know which terminal to use for password prompts.
-# It's useful for Git operations that require GPG signing, like signed commits.
-export GPG_TTY=$(tty)
-
-# Tmux creates a more complex terminal environment with multiple virtual TTYs,
-# and it maintains a persistent session that can detach/reattach.
-# updatestartuptty is a command that tells the GPG agent which TTY to use for pinentry (password prompt).
-# When switching to a previous Tmux window or pane, it might be necessary to re-run this command manually.
-if [ -n "$TMUX" ]; then
-    gpg-connect-agent updatestartuptty /bye >/dev/null
-fi
