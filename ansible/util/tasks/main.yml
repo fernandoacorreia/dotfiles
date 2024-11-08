@@ -46,3 +46,15 @@
 
 - name: "Copy .ideavimrc"
   copy: src={{ home_dir }}/dotfiles/.ideavimrc dest={{ home_dir }}/.ideavimrc force=no
+
+- name: "Ensure .gnupg directory exists"
+  file:
+    path: "{{ home_dir }}/.gnupg"
+    state: directory
+    mode: '0700'  # Recommended permissions for .gnupg
+
+- name: "Copy GPG agent configuration"
+  copy:
+    src: "{{ home_dir }}/dotfiles/templates/gpg-agent.conf"
+    dest: "{{ home_dir }}/.gnupg/gpg-agent.conf"
+    force: no
