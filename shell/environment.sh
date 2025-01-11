@@ -16,19 +16,8 @@ export KEYTIMEOUT=1
 # neovim
 export EDITOR=nvim
 
-# Add bin directory to path
-export PATH="$HOME/bin:$HOME/dotfiles/bin:$PATH"
-
-# Add .local/bin directory to path
-if [ -d $HOME/.local/bin ]; then
-  export PATH="$HOME/.local/bin:$PATH"
-fi
-
-# Add gnubin to PATH
-export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
-
-# Add system-level extra binaries to path
-export PATH="/opt/bin:$PATH"
+# Add bin directories to path
+export PATH="$HOME/.local/bin:$HOME/bin:$HOME/dotfiles/bin:/opt/bin:/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 
 # rbenv
 eval "$(rbenv init -)"
