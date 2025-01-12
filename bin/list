@@ -1,0 +1,84 @@
+#!/bin/bash
+#
+# Lists files and copies them to the clipboard so that they can be pasted into an LLM chat.
+#
+set -o nounset -o errexit -o pipefail
+
+# Function to check if a file is text
+is_text_file() {
+    local file="$1"
+    local mime_type=$(file -b --mime-type "$file")
+    if [[ $mime_type =~ ^text/ ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to process a single file
+process_file() {
+    local file="$1"
+
+    # Output the file path
+    echo "# $file:"
+
+    # Check if file is empty first
+    if [ ! -s "$file" ]; then
+        echo "(empty file)"
+        echo
+        return
+    fi
+
+    # Then check if it's a text file
+    if ! is_text_file "$file"; then
+        echo "Skipping non-text file: $file" >&2
+        return
+    fi
+
+    # Output the contents
+    echo "$(cat "$file")"
+    echo
+}
+
+# Function to process a directory
+process_directory() {
+    local dir="$1"
+    local file
+
+    # Check if directory exists and is readable
+    if [ ! -d "$dir" ] || [ ! -r "$dir" ]; then
+        echo "Error: Cannot access directory $dir" >&2
+        return 1
+    fi
+
+    # Process each file in the directory
+    while IFS= read -r -d '' file; do
+        process_file "$file"
+    done < <(find "$dir" -type f -print0)
+}
+
+# Main script
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <path1> [path2 ...]" >&2
+    exit 1
+fi
+
+output=""
+
+# Process each argument
+for path in "$@"; do
+    if [ ! -e "$path" ]; then
+        echo "Error: $path does not exist" >&2
+        continue
+    fi
+
+    if [ -d "$path" ]; then
+        process_directory "$path"
+    elif [ -f "$path" ]; then
+        process_file "$path"
+    else
+        echo "Error: $path is neither a file nor a directory" >&2
+    fi
+done | pbcopy
+
+echo "File listing has been copied to clipboard" >&2
