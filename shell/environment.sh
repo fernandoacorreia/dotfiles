@@ -22,16 +22,6 @@ export PATH="$HOME/.local/bin:$HOME/bin:$HOME/dotfiles/bin:/opt/bin:/usr/local/o
 # rbenv
 eval "$(rbenv init -)"
 
-# pyenv
-if [ "${HOMEBREW_PREFIX:-}" != "" ]; then
-  export PYENV_ROOT="$HOMEBREW_PREFIX/opt/pyenv"
-else
-  export PYENV_ROOT="$HOME/.pyenv"
-fi
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
 # keychain
 # See https://www.funtoo.org/Keychain
 # See https://unix.stackexchange.com/a/90869/56711
