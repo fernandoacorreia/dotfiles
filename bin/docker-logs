@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Displays the logs from a container, and copies them to the clipboard.
+#
+set -o nounset -o errexit -o pipefail
+
+if [ -z "${1-}" ]; then
+  echo "Error: Container ID or name argument is required"
+  echo "Usage: $0 <container>"
+  exit 1
+fi
+
+container=$1
+docker logs $container 2>&1 | tee >(pbcopy)
