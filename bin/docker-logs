@@ -11,4 +11,4 @@ if [ -z "${1-}" ]; then
 fi
 
 container=$1
-docker logs $container 2>&1 | tee >(pbcopy)
+docker logs $container 2>&1 | tee >(cbcopy)

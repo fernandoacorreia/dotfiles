@@ -6,16 +6,16 @@ set -o nounset -o errexit -o pipefail
 
 # Check if running on macOS
 if [[ "$(uname)" == "Darwin" ]]; then
-    if command -v pbcopy >/dev/null 2>&1; then
-        pbcopy
-        exit 0
-    fi
+  if command -v pbcopy >/dev/null 2>&1; then
+    pbcopy
+    exit 0
+  fi
 fi
 
-# Check if it2copy is available
+# Check if it2copy is available (including as an alias)
 if command -v it2copy >/dev/null 2>&1; then
-    it2copy
-    exit 0
+  it2copy
+  exit 0
 fi
 
 # If neither tool is available, exit with error
