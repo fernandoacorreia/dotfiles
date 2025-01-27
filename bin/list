@@ -79,6 +79,6 @@ for path in "$@"; do
     else
         echo "Error: $path is neither a file nor a directory" >&2
     fi
-done | pbcopy
+done | cbcopy
 
 echo "File listing has been copied to clipboard" >&2
