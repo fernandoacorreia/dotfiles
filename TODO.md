@@ -32,3 +32,4 @@
 - install podman and alias to docker
 - https://zaiste.net/posts/shell-commands-rust/
 - delta, a diff tool: https://github.com/dandavison/delta
+- Install iterm2 utils: curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utilities.sh | bash
