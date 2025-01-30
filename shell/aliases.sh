@@ -41,3 +41,5 @@ if command -v podman &> /dev/null; then
   fi
 fi
 
+# lazydocker
+alias lzd=lazydocker
