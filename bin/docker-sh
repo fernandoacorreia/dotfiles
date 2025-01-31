@@ -1,7 +1,33 @@
 #!/bin/bash
 #
-# Runs sh in a temporary container.
+# Runs sh in a temporary container with an optional --root argument.
 #
 set -o nounset -o errexit -o pipefail
 
-docker run --rm -it --user=root --entrypoint=/bin/sh $1
+ROOT=false
+IMAGE=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --root)
+      ROOT=true
+      shift
+      ;;
+    *)
+      IMAGE="$1"
+      shift
+      ;;
+  esac
+done
+
+# Build the Docker command
+CMD="docker run --rm -it"
+if $ROOT; then
+  CMD+=" --user=root"
+fi
+CMD+=" --entrypoint=/bin/sh $IMAGE"
+
+# Execute the command
+eval "$CMD"
+
