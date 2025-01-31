@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Lists files and copies them to the clipboard so that they can be pasted into an LLM chat.
+# Lists files matching glob patterns and copies them to the clipboard for pasting into an LLM chat.
+# Supports patterns like "app/**/*entity.py" to find files in any subdirectory.
 #
 set -o nounset -o errexit -o pipefail
 
@@ -18,66 +19,72 @@ is_text_file() {
 # Function to process a single file
 process_file() {
     local file="$1"
-
     # Output the file path
     echo "# $file:"
-
     # Check if file is empty first
     if [ ! -s "$file" ]; then
         echo "(empty file)"
         echo
         return
     fi
-
     # Then check if it's a text file
     if ! is_text_file "$file"; then
         echo "Skipping non-text file: $file" >&2
         return
     fi
-
     # Output the contents
     echo "$(cat "$file")"
     echo
 }
 
-# Function to process a directory
-process_directory() {
-    local dir="$1"
-    local file
+# Function to process glob pattern
+process_pattern() {
+    local pattern="$1"
+    local matches=()
 
-    # Check if directory exists and is readable
-    if [ ! -d "$dir" ] || [ ! -r "$dir" ]; then
-        echo "Error: Cannot access directory $dir" >&2
-        return 1
+    # Use find with -path to handle glob patterns
+    # Convert glob pattern to find-compatible pattern
+    local find_pattern="${pattern//\*\*/*}"
+
+    while IFS= read -r -d '' file; do
+        matches+=("$file")
+    done < <(find . -type f -path "./${find_pattern}" -print0 2>/dev/null)
+
+    if [ ${#matches[@]} -eq 0 ]; then
+        echo "Warning: No files found matching pattern: $pattern" >&2
+        return
     fi
 
-    # Process each file in the directory
-    while IFS= read -r -d '' file; do
+    for file in "${matches[@]}"; do
         process_file "$file"
-    done < <(find "$dir" -type f -print0)
+    done
 }
 
 # Main script
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 <path1> [path2 ...]" >&2
+    echo "Usage: $0 <pattern1> [pattern2 ...]" >&2
+    echo "Examples:" >&2
+    echo "  $0 'app/**/*entity.py'    # Find all *entity.py files in app directory" >&2
+    echo "  $0 'src/**/*.{js,ts}'     # Find all .js and .ts files in src directory" >&2
     exit 1
 fi
 
-output=""
-
-# Process each argument
-for path in "$@"; do
-    if [ ! -e "$path" ]; then
-        echo "Error: $path does not exist" >&2
-        continue
-    fi
-
-    if [ -d "$path" ]; then
-        process_directory "$path"
-    elif [ -f "$path" ]; then
-        process_file "$path"
+# Process each argument as a pattern
+for pattern in "$@"; do
+    if [[ "$pattern" == *"*"* ]]; then
+        # Handle as glob pattern
+        process_pattern "$pattern"
+    elif [ -e "$pattern" ]; then
+        # Handle as direct file/directory path
+        if [ -d "$pattern" ]; then
+            while IFS= read -r -d '' file; do
+                process_file "$file"
+            done < <(find "$pattern" -type f -print0)
+        else
+            process_file "$pattern"
+        fi
     else
-        echo "Error: $path is neither a file nor a directory" >&2
+        echo "Error: $pattern is neither a valid pattern nor an existing path" >&2
     fi
 done | cbcopy
 
