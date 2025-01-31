@@ -5,31 +5,32 @@
 #
 set -o nounset -o errexit -o pipefail
 
-# Function to check if a file is text
-is_text_file() {
+is_binary_file() {
     local file="$1"
+    if [ ! -s "$file" ]; then
+        return 1  # Consider empty files as not binary files
+    fi
     local mime_type=$(file -b --mime-type "$file")
     if [[ $mime_type =~ ^text/ ]]; then
-        return 0
-    else
-        return 1
+        return 1  # Text file
     fi
+    return 0  # Binary file
 }
 
 # Function to process a single file
 process_file() {
     local file="$1"
+    # Skip binary non-empty files
+    if is_binary_file "$file"; then
+        return
+    fi
     # Output the file path
+    echo $file >&2
     echo "# $file:"
-    # Check if file is empty first
+    # Output special content for empty files
     if [ ! -s "$file" ]; then
         echo "(empty file)"
         echo
-        return
-    fi
-    # Then check if it's a text file
-    if ! is_text_file "$file"; then
-        echo "Skipping non-text file: $file" >&2
         return
     fi
     # Output the contents
@@ -87,5 +88,3 @@ for pattern in "$@"; do
         echo "Error: $pattern is neither a valid pattern nor an existing path" >&2
     fi
 done | cbcopy
-
-echo "File listing has been copied to clipboard" >&2
