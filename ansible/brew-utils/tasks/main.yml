@@ -10,4 +10,5 @@
     - lazydocker
     - pillow
     - pstree
+    - yazi
     - zoxide
