@@ -23,7 +23,7 @@
 - hosts: os_MacOSX
   roles:
     - cask
-    - hack-font
+    - hack-nerd-font
     - iterm2
     - sourcetree
     - karabiner
