@@ -1,5 +1,4 @@
 - LazyVim
-- Finish setting up McFly
 - Prompt configuration
   - With Powerlevel10:
     - Install Meslo nerd font:

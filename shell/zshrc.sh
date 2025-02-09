@@ -26,14 +26,18 @@ fi
 
 source ~/.profile
 
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+
 # https://github.com/cantino/mcfly
 if command -v mcfly &>/dev/null; then
+  export MCFLY_FUZZY=2
+  export MCFLY_KEY_SCHEME=vim
+  export MCFLY_RESULTS=30
   eval "$(mcfly init zsh)"
 fi
 
 # sdkman-init.sh is loaded in environment.sh
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # gvm (Go Version Manager)
 [[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
