@@ -1,0 +1,42 @@
+---
+- name: Check if Hack Nerd Font is already installed
+  stat:
+    path: "/Library/Fonts/HackNerdFont-Regular.ttf"
+  become: true
+  register: hack_nerd_check
+
+- name: Create temporary directory
+  tempfile:
+    state: directory
+    suffix: hack-nerd
+  register: temp_dir
+  when: not hack_nerd_check.stat.exists
+
+- name: Download Hack Nerd Font
+  get_url:
+    url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Hack.zip"
+    dest: "{{ temp_dir.path }}/hack-nerd.zip"
+  when: not hack_nerd_check.stat.exists
+
+- name: Extract Hack Nerd Font
+  unarchive:
+    src: "{{ temp_dir.path }}/hack-nerd.zip"
+    dest: "{{ temp_dir.path }}"
+    remote_src: yes
+  when: not hack_nerd_check.stat.exists
+
+- name: Install Hack Nerd Font files
+  copy:
+    src: "{{ item }}"
+    dest: "/Library/Fonts/"
+    mode: '0644'
+  become: true
+  with_fileglob:
+    - "{{ temp_dir.path }}/*.ttf"
+  when: not hack_nerd_check.stat.exists
+
+- name: Clean up temporary directory
+  file:
+    path: "{{ temp_dir.path }}"
+    state: absent
+  when: not hack_nerd_check.stat.exists
