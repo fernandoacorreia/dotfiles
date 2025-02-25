@@ -9,6 +9,7 @@
     - kubernetes-cli
     - lazydocker
     - pillow
+    - pre-commit
     - pstree
     - yazi
     - zoxide
