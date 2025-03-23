@@ -63,3 +63,8 @@ function update_gpg_tty() {
 
 # Add our function to precmd hooks.
 precmd_functions+=(update_gpg_tty)
+
+# fnm - Fast and simple Node.js version manager
+if command -v fnm &>/dev/null; then
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi
