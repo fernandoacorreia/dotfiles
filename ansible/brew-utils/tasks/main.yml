@@ -6,7 +6,6 @@
   with_items:
     - awscli
     - fnm
-    - fzf
     - k9s
     - kubernetes-cli
     - lazydocker

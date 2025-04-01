@@ -32,6 +32,7 @@
 - hosts: all
   roles:
     - brew-utils
+    - fzf
     - gh
     - gitui
     - lazygit
