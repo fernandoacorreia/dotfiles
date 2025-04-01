@@ -16,9 +16,6 @@
 [submodule "vendor/fzf.vim"]
 	path = vendor/fzf.vim
 	url = git@github.com:fernandoacorreia/fzf.vim.git
-[submodule "vendor/fzf"]
-	path = vendor/fzf
-	url = git@github.com:fernandoacorreia/fzf.git
 [submodule "vendor/tpm"]
 	path = vendor/tpm
 	url = https://github.com/tmux-plugins/tpm
