@@ -1,3 +1,5 @@
+- To use fzf in Vim, add the following line to your .vimrc:
+  set rtp+=/opt/homebrew/opt/fzf
 - LazyVim
 - Prompt configuration
   - With Powerlevel10:
