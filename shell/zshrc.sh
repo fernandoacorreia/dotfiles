@@ -26,8 +26,8 @@ fi
 
 source ~/.profile
 
-# Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+# Setup fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # https://github.com/cantino/mcfly
 if command -v mcfly &>/dev/null; then
