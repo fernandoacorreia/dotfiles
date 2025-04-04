@@ -20,4 +20,5 @@ fi
 
 # If neither tool is available, exit with error
 echo "Error: This script requires either pbcopy (macOS) or it2copy" >&2
+echo "it2copy can be installed via the iTerm2 > Install Shell Integration menu" >&2
 exit 1
