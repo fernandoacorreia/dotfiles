@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Auto-attach to tmux session, filtering out *-port-forward sessions
+
+# Check if already in tmux
+if [ -n "$TMUX" ]; then
+    echo "Already inside a tmux session"
+    exit 0
+fi
+
+# Check if tmux is available
+if ! command -v tmux >/dev/null 2>&1; then
+    echo "tmux is not installed"
+    exit 1
+fi
+
+# Get sessions excluding *-port-forward sessions
+available_sessions=$(tmux list-sessions 2>/dev/null | grep -v "\-port-forward:")
+
+if [ -z "$available_sessions" ]; then
+    echo "No tmux sessions available"
+    exit 1
+fi
+
+# Get the first available session name
+session_name=$(echo "$available_sessions" | head -n1 | cut -d: -f1)
+
+echo "Attaching to tmux session: $session_name"
+tmux attach-session -t "$session_name"
