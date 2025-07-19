@@ -24,7 +24,7 @@ if test -f kubectl; then
   source <(kubectl completion zsh)
 fi
 
-source ~/.profile
+source ~/.zprofile
 
 # Setup fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -36,14 +36,6 @@ if command -v mcfly &>/dev/null; then
   export MCFLY_RESULTS=30
   eval "$(mcfly init zsh)"
 fi
-
-# sdkman-init.sh is loaded in environment.sh
-
-# gvm (Go Version Manager)
-[[ -s "$HOME/.gvm/scripts/gvm" ]] && source "$HOME/.gvm/scripts/gvm"
-
-# zoxide
-eval "$(zoxide init zsh --cmd cd)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
