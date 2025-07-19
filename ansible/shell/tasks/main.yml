@@ -15,14 +15,29 @@
     path: "{{ home_dir }}/.profile"
   register: home_dot_profile
 
+- name: Get status for ~/.zprofile
+  stat:
+    path: "{{ home_dir }}/.zprofile"
+  register: home_dot_zprofile
+
 - name: Preserve existing ~/.profile
   command: mv "{{ home_dir }}/.profile" "{{ home_dir }}/.profile.bak"
   when: home_dot_profile.stat.isreg is defined and home_dot_profile.stat.isreg
+
+- name: Preserve existing ~/.zprofile
+  command: mv "{{ home_dir }}/.zprofile" "{{ home_dir }}/.zprofile.bak"
+  when: home_dot_zprofile.stat.isreg is defined and home_dot_zprofile.stat.isreg
 
 - name: Create link for ~/.profile
   file:
     src: "{{ home_dir }}/dotfiles/shell/profile.sh"
     dest: "{{ home_dir }}/.profile"
+    state: link
+
+- name: Create link for ~/.zprofile
+  file:
+    src: "{{ home_dir }}/dotfiles/shell/zprofile.sh"
+    dest: "{{ home_dir }}/.zprofile"
     state: link
 
 - name: Get status for ~/.zshrc
