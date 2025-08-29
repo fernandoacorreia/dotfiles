@@ -6,5 +6,5 @@
   changed_when: false
 
 - name: Install Claude Code
-  shell: curl -fsSL https://claude.ai/install.sh | bash
+  shell: curl -fsSL https://claude.ai/install.sh | bash -s latest
   when: claude_exists.rc != 0
