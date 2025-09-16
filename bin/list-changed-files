@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Script to list all files changed on the current branch relative to origin/main
+# This shows the same files that would appear in a GitHub pull request
+
+set -e
+
+echo "Fetching latest changes from origin..."
+git fetch origin
+
+echo "Finding current branch..."
+CURRENT_BRANCH=$(git branch --show-current)
+echo "Current branch: $CURRENT_BRANCH"
+
+echo "Finding common commit between $CURRENT_BRANCH and origin/main..."
+COMMON_COMMIT=$(git merge-base HEAD origin/main)
+echo "Common commit: $COMMON_COMMIT"
+
+echo ""
+echo "Files changed on $CURRENT_BRANCH relative to origin/main:"
+echo "============================================================="
+git diff --name-only $COMMON_COMMIT..HEAD
+
+# Check for uncommitted changes
+STAGED_FILES=$(git diff --name-only --cached)
+UNSTAGED_FILES=$(git diff --name-only)
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+
+# Only show uncommitted changes section if there are any
+if [ -n "$STAGED_FILES" ] || [ -n "$UNSTAGED_FILES" ] || [ -n "$UNTRACKED_FILES" ]; then
+    echo ""
+    echo "Uncommitted changes in working directory:"
+    echo "=========================================="
+
+    if [ -n "$STAGED_FILES" ]; then
+        echo "Staged files:"
+        git diff --name-only --cached
+        echo ""
+    fi
+
+    if [ -n "$UNSTAGED_FILES" ]; then
+        echo "Modified files (not staged):"
+        git diff --name-only
+        echo ""
+    fi
+
+    if [ -n "$UNTRACKED_FILES" ]; then
+        echo "Untracked files:"
+        git ls-files --others --exclude-standard
+        echo ""
+    fi
+fi
