@@ -9,6 +9,7 @@
     - k9s
     - kubernetes-cli
     - lazydocker
+    - mc
     - pillow
     - pre-commit
     - pstree
