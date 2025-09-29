@@ -1,27 +1,14 @@
 {
-  "description": "Caps Lock -> LeftCommand, Caps Lock -> Escape (if held alone for > 500 ms)",
-  "manipulators": [
-    {
-      "type": "basic",
-      "from": {
-        "key_code": "caps_lock",
-        "modifiers": {
-          "optional": [
-            "any"
-          ]
-        }
-      },
-      "to": [
+    "description": "Change caps_lock to Command if pressed with other keys, to escape if pressed alone.",
+    "manipulators": [
         {
-          "key_code": "left_command"
+            "from": {
+                "key_code": "caps_lock",
+                "modifiers": { "optional": ["any"] }
+            },
+            "to": [{ "key_code": "left_command" }],
+            "to_if_alone": [{ "key_code": "escape" }],
+            "type": "basic"
         }
-      ],
-      "to_if_alone": [
-        {
-          "key_code": "escape",
-          "hold_down_milliseconds": 500
-        }
-      ]
-    }
-  ]
+    ]
 }
