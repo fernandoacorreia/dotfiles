@@ -6,6 +6,7 @@
   with_items:
     - awscli
     - fnm
+    - git-filter-repo
     - k9s
     - kubernetes-cli
     - lazydocker
