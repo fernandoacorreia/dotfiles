@@ -42,7 +42,7 @@ macos_install_cli_dev_tools() {
   if ! macos_cli_dev_tools_installed; then
     echo "Installing command-line developer tools"
     xcode-select --install
-    while ! cli_dev_tools_installed; do
+    while ! macos_cli_dev_tools_installed; do
       echo "Waiting for installation to finish (look for a dialog window)"
       sleep 10
     done
@@ -130,7 +130,6 @@ setup_linuxbrew() {
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
 }
-
 
 install_prerequisites() {
   mkdir -p $HOME/.ssh
