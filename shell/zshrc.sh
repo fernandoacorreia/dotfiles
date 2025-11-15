@@ -55,3 +55,8 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 # SDKMAN! -- See https://sdkman.io/usage
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# pyenv init
+# This is run for every interactive shell, including subshells (like when you type zsh or open a new tab).
+# It sets up shell functions (not just environment variables)
+eval "$(pyenv init -)"

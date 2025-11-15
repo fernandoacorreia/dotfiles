@@ -1,3 +1,11 @@
+# pyenv setup -- this must run early
+# This is run when a new login shell starts (like when you open a new Terminal window).
+# It sets up environment variables (mainly PATH) so that your shell finds the correct Python versions managed by pyenv before the system Python.
+eval "$(pyenv init --path)"
+# To activate and deactive the virtualenv upon entering and exiting the directory, based on `.python-version`.
+# <https://github.com/pyenv/pyenv-virtualenv#activate-virtualenv>
+eval "$(pyenv virtualenv-init -)"
+
 # fzf
 export FZF_DEFAULT_OPTS="--history=$HOME/.fzf_history"
 export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
