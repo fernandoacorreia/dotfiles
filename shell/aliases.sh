@@ -1,4 +1,5 @@
 # Git
+alias lg='lazygit'
 alias gcd='git checkout develop'
 alias gco='git checkout'
 alias gfa='git fetch --all --tags --prune'
