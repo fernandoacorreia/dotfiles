@@ -60,3 +60,9 @@ export SDKMAN_DIR="$HOME/.sdkman"
 # This is run for every interactive shell, including subshells (like when you type zsh or open a new tab).
 # It sets up shell functions (not just environment variables)
 eval "$(pyenv init -)"
+
+# Support a local .zshrc script that's not saved to source control.
+if test -f $HOME/.local/.zshrc
+then
+  source $HOME/.local/.zshrc
+fi
