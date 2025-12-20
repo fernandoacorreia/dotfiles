@@ -61,6 +61,11 @@ export SDKMAN_DIR="$HOME/.sdkman"
 # It sets up shell functions (not just environment variables)
 eval "$(pyenv init -)"
 
+# direnv - automatic environment switching
+if command -v direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
 # Support a local .zshrc script that's not saved to source control.
 if test -f $HOME/.local/.zshrc
 then

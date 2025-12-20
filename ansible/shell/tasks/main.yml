@@ -69,3 +69,14 @@
     src: "{{ home_dir }}/dotfiles/shell/p10k.zsh"
     dest: "{{ home_dir }}/.p10k.zsh"
     state: link
+
+- name: Ensure ~/.config/direnv directory exists
+  file:
+    path: "{{ home_dir }}/.config/direnv"
+    state: directory
+
+- name: Create link for direnvrc
+  file:
+    src: "{{ home_dir }}/dotfiles/config/direnv/direnvrc"
+    dest: "{{ home_dir }}/.config/direnv/direnvrc"
+    state: link
