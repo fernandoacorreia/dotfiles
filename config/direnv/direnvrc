@@ -26,7 +26,10 @@ layout_poetry() {
       return 1
     fi
     log_status "creating .venv via poetry install"
-    poetry install
+    if ! poetry install; then
+      log_error "poetry install failed"
+      return 1
+    fi
   fi
 
   VIRTUAL_ENV="$(pwd)/.venv"
