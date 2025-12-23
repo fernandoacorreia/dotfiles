@@ -1,15 +1,16 @@
-# Poetry-specific layout for projects with pyproject.toml
-# Requires: pyproject.toml must exist
-# Virtualenv: Always uses .venv directory (Poetry's convention)
-# This function is available globally and can be used in .envrc files
-#
-# Usage in projects:
-# 1. Create a .envrc file in your Poetry project root (where pyproject.toml is located)
+# direnv functions for automatically setting up the virtual environment
+# for Python projects.
+
+# Usage:
+# 1. Create a .envrc file in your project's root
 # 2. Add the following line to .envrc:
 #      layout_poetry
+# or:
+#      layout_venv
 # 3. Authorize direnv to load it:
-#      direnv allow .
-#
+#      direnv allow
+
+# direnv configuration for poetry projects
 # The function will:
 # - Automatically activate the .venv virtual environment when you cd into the directory
 # - Create .venv via 'poetry install' if it doesn't exist
@@ -33,6 +34,18 @@ layout_poetry() {
   fi
 
   VIRTUAL_ENV="$(pwd)/.venv"
+  export VIRTUAL_ENV
+  PATH_add "$VIRTUAL_ENV/bin"
+}
+
+# direnv configuration for generic .venv directories
+layout_venv() {
+  VIRTUAL_ENV="$(pwd)/.venv"
+  if [[ ! -d "$VIRTUAL_ENV" ]]; then
+    log_error "Virtual environment $VIRTUAL_ENV does not exist"
+    return 1
+  fi
+
   export VIRTUAL_ENV
   PATH_add "$VIRTUAL_ENV/bin"
 }
