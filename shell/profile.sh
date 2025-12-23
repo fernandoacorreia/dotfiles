@@ -12,6 +12,9 @@ then
   for f in ~/secrets/*.sh; do source $f; done
 fi
 
+# Increase open files limit
+ulimit -n 100000
+
 source $HOME/dotfiles/shell/environment.sh
 source $HOME/dotfiles/shell/aliases.sh
 source $HOME/dotfiles/shell/less-termcap.sh
