@@ -1,3 +1,5 @@
+[core]
+	excludesfile = ~/.gitignore_global
 [user]
 	name = Fernando Correia
 	email = fernandoacorreia@gmail.com
