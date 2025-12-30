@@ -20,3 +20,5 @@
 	enabled = true # Enables reuse recovered resolution to automatically resolve conflicts.
 [diff]
 	algorithm = histogram # Improve diff of reordered functions.
+[credential]
+	helper = osxkeychain
