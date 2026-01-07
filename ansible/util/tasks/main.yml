@@ -50,6 +50,9 @@
     dest: "{{ home_dir }}/.gitignore_global"
     state: link
 
+- name: "Copy .rgignore"
+  copy: src={{ home_dir }}/dotfiles/templates/rgignore dest={{ home_dir }}/.rgignore force=no
+
 - name: "Copy .ideavimrc"
   copy: src={{ home_dir }}/dotfiles/.ideavimrc dest={{ home_dir }}/.ideavimrc force=no
 
