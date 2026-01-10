@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Starts mockserver in a detached Docker container on port 1080.
+#
+set -o nounset -o errexit -o pipefail
+
+docker run --rm -d --name mockserver --platform linux/amd64 -p 1080:1080 mockserver/mockserver
