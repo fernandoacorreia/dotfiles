@@ -1,7 +1,7 @@
 #!/bin/bash
 # Claude Code statusline with powerline style and git status
 # Uses nerd fonts and ANSI colors for rainbow effect
-# Source: https://github.com/pchalasani/claude-code-tools/blob/main/scripts/statusline.sh
+# Based on https://github.com/pchalasani/claude-code-tools/blob/main/scripts/statusline.sh
 
 input=$(cat)
 
