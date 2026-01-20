@@ -52,7 +52,7 @@ SEP=''
 # Separator space with black background
 SPACER="${RESET}${BG_BLACK} ${RESET}"
 
-# Git info - check status first to determine model background color
+# Git info - check status to determine git branch background color
 git_segment=""
 model_bg=$BG_GREEN  # default to green
 model_fg=$FG_GREEN
@@ -78,21 +78,20 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     [ "$modified" -gt 0 ] && git_status+="!$modified"
     [ "$untracked" -gt 0 ] && git_status+="?$untracked"
 
-    # Choose color - light blue for branch, green/yellow for model based on status
+    # Choose color - yellow for dirty branch, light blue for clean branch
+    # Model background is always green
     BG_LTBLUE=$'\033[48;5;75m'
     FG_LTBLUE=$'\033[38;5;75m'
+    model_bg=$BG_GREEN
+    model_fg=$FG_GREEN
     if [ -n "$git_status" ]; then
-        git_bg=$BG_LTBLUE
-        git_fg=$FG_LTBLUE
-        model_bg=$BG_YELLOW
-        model_fg=$FG_YELLOW
-        git_content="  $branch $git_status "
+        git_bg=$BG_YELLOW
+        git_fg=$FG_YELLOW
+        git_content="  $branch $git_status "
     else
         git_bg=$BG_LTBLUE
         git_fg=$FG_LTBLUE
-        model_bg=$BG_GREEN
-        model_fg=$FG_GREEN
-        git_content="  $branch "
+        git_content="  $branch "
     fi
     git_segment="${FG_BLACK}${git_bg}${SEP}${FG_BLACK}${git_content}"
     next_fg=$git_fg
