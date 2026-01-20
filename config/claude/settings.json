@@ -1,8 +1,4 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "~/dotfiles/bin/claude-statusline.sh"
-  },
   "permissions": {
     "allow": [
       "Bash(echo:*)",
@@ -46,6 +42,7 @@
       "Bash(sha1sum:*)",
       "Bash(tree:*)",
       "Bash(jq:*)",
+      "Bash(xxd:*)",
       "Bash(ulimit -n:*)",
       "Bash(test:*)",
       "Bash(pyenv --version:*)",
@@ -57,5 +54,10 @@
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/dotfiles/bin/claude-statusline.sh"
+  },
+  "model": "sonnet"
 }
