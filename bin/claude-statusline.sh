@@ -41,6 +41,7 @@ BG_ORANGE=$'\033[48;5;208m'
 FG_ORANGE=$'\033[38;5;208m'
 BG_MAGENTA=$'\033[45m'
 FG_MAGENTA=$'\033[35m'
+BG_BLACK=$'\033[40m'
 FG_BLACK=$'\033[30m'
 FG_WHITE=$'\033[97m'
 BOLD=$'\033[1m'
@@ -48,6 +49,8 @@ BLINK=$'\033[5m'
 
 # Powerline separator
 SEP=''
+# Separator space with black background
+SPACER="${RESET}${BG_BLACK} ${RESET}"
 
 # Git info - check status first to determine model background color
 git_segment=""
@@ -91,7 +94,7 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
         model_fg=$FG_GREEN
         git_content="  $branch "
     fi
-    git_segment="${FG_BLUE}${git_bg}${SEP}${FG_BLACK}${git_content}"
+    git_segment="${FG_BLACK}${git_bg}${SEP}${FG_BLACK}${git_content}"
     next_fg=$git_fg
     next_bg=$BG_CYAN
 else
@@ -135,7 +138,7 @@ if [ -n "$pct" ] && [ "$pct" != "null" ] && [ "$pct" -ge 0 ] 2>/dev/null; then
     # Segment with dark background
     BG_DARK=$'\033[48;5;236m'
     FG_DARK=$'\033[38;5;236m'
-    context_segment="${next_fg}${BG_DARK}${SEP}${bar_blink}${fill_color}${filled_bar}${RESET}${BG_DARK}${empty_color}${empty_bar}${FG_WHITE} ${pct}%${RESET}"
+    context_segment="${FG_BLACK}${BG_DARK}${SEP}${bar_blink}${fill_color}${filled_bar}${RESET}${BG_DARK}${empty_color}${empty_bar}${FG_WHITE} ${pct}%${RESET}"
     next_fg=$FG_DARK
 fi
 
@@ -143,14 +146,17 @@ fi
 if [ -z "$context_segment" ]; then
     BG_DARK=$'\033[48;5;236m'
     FG_DARK=$'\033[38;5;236m'
-    context_segment="${next_fg}${BG_DARK}${SEP}${FG_WHITE} --%${RESET}"
+    context_segment="${FG_BLACK}${BG_DARK}${SEP}${FG_WHITE} --%${RESET}"
     next_fg=$FG_DARK
 fi
 
 # Build output with powerline style
 # Model: black on green (clean) or yellow (dirty)
 echo -n "${model_bg}${FG_BLACK}${BOLD} $model ${RESET}"
-echo -n "${model_fg}${BG_BLUE}${SEP}${FG_BLACK}  $dir_name ${RESET}"
+echo -n "${model_fg}${SEP}${SPACER}"
+echo -n "${FG_BLUE}${BG_BLUE}${SEP}${FG_BLACK}  $dir_name ${RESET}"
+echo -n "${FG_BLUE}${SEP}${SPACER}"
 echo -n "$git_segment"
+[ -n "$git_segment" ] && echo -n "${git_fg}${SEP}${SPACER}"
 echo -n "$context_segment"
-echo -n "${next_fg}${RESET}${SEP}"
+echo -n "${next_fg}${SEP}${RESET}"
