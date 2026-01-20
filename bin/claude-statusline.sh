@@ -25,6 +25,17 @@ model=$(echo "$input" | jq -r '
 # Clean up model name - remove claude- prefix and date suffix, truncate
 model=$(echo "$model" | sed 's/claude-//' | sed 's/-[0-9]*$//' | cut -c1-10)
 
+# Set model background color based on model name
+shopt -s nocasematch
+if [[ "$model" == *opus* ]]; then
+    model_bg=$'\033[45m'      # BG_MAGENTA
+    model_fg=$'\033[35m'      # FG_MAGENTA
+else
+    model_bg=$'\033[44m'      # BG_BLUE
+    model_fg=$'\033[34m'      # FG_BLUE
+fi
+shopt -u nocasematch
+
 # ANSI color codes (using $'...' for proper escape handling)
 RESET=$'\033[0m'
 BG_BLUE=$'\033[44m'
@@ -41,6 +52,8 @@ BG_ORANGE=$'\033[48;5;208m'
 FG_ORANGE=$'\033[38;5;208m'
 BG_MAGENTA=$'\033[45m'
 FG_MAGENTA=$'\033[35m'
+BG_LTGREEN=$'\033[48;5;114m'
+FG_LTGREEN=$'\033[38;5;114m'
 BG_BLACK=$'\033[40m'
 FG_BLACK=$'\033[30m'
 FG_WHITE=$'\033[97m'
@@ -54,8 +67,6 @@ SPACER="${RESET}${BG_BLACK} ${RESET}"
 
 # Git info - check status to determine git branch background color
 git_segment=""
-model_bg=$BG_GREEN  # default to green
-model_fg=$FG_GREEN
 if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     branch=$(git -C "$cwd" branch --show-current 2>/dev/null)
     [ -z "$branch" ] && branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
@@ -79,11 +90,8 @@ if git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     [ "$untracked" -gt 0 ] && git_status+="?$untracked"
 
     # Choose color - yellow for dirty branch, light blue for clean branch
-    # Model background is always green
     BG_LTBLUE=$'\033[48;5;75m'
     FG_LTBLUE=$'\033[38;5;75m'
-    model_bg=$BG_GREEN
-    model_fg=$FG_GREEN
     if [ -n "$git_status" ]; then
         git_bg=$BG_YELLOW
         git_fg=$FG_YELLOW
@@ -151,10 +159,10 @@ fi
 
 # Build output with powerline style
 # Model: black on green (clean) or yellow (dirty)
-echo -n "${model_bg}${FG_BLACK}${BOLD} $model ${RESET}"
+echo -n "${model_bg}${FG_WHITE}${BOLD} $model ${RESET}"
 echo -n "${model_fg}${SEP}${SPACER}"
-echo -n "${FG_BLUE}${BG_BLUE}${SEP}${FG_BLACK}  $dir_name ${RESET}"
-echo -n "${FG_BLUE}${SEP}${SPACER}"
+echo -n "${FG_LTGREEN}${BG_LTGREEN}${SEP}${FG_BLACK}  $dir_name ${RESET}"
+echo -n "${FG_LTGREEN}${SEP}${SPACER}"
 echo -n "$git_segment"
 [ -n "$git_segment" ] && echo -n "${git_fg}${SEP}${SPACER}"
 echo -n "$context_segment"
