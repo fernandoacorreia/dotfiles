@@ -1,0 +1,39 @@
+# See https://github.com/butttons/dora
+---
+- name: Check if dora is already installed
+  command: command -v dora
+  register: dora_exists
+  ignore_errors: true
+  changed_when: false
+
+- name: Set dora binary URL for macOS ARM64
+  set_fact:
+    dora_url: "https://github.com/butttons/dora/releases/latest/download/dora-darwin-arm64"
+  when: ansible_system == "Darwin" and ansible_architecture == "arm64"
+
+- name: Set dora binary URL for Linux x64
+  set_fact:
+    dora_url: "https://github.com/butttons/dora/releases/latest/download/dora-linux-x64"
+  when: ansible_system == "Linux" and ansible_architecture == "x86_64"
+
+- name: Download dora binary
+  get_url:
+    url: "{{ dora_url }}"
+    dest: /tmp/dora
+    mode: '0755'
+  when: dora_exists.rc != 0 and dora_url is defined
+
+- name: Install dora to /usr/local/bin
+  become: yes
+  copy:
+    src: /tmp/dora
+    dest: /usr/local/bin/dora
+    mode: '0755'
+    remote_src: yes
+  when: dora_exists.rc != 0 and dora_url is defined
+
+- name: Clean up temporary dora binary
+  file:
+    path: /tmp/dora
+    state: absent
+  when: dora_exists.rc != 0 and dora_url is defined

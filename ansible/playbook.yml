@@ -33,6 +33,7 @@
   roles:
     - brew-utils
     - claude-code
+    - dora
     - fzf
     - gh
     - gitui
