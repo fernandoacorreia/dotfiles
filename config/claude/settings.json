@@ -58,6 +58,5 @@
   "statusLine": {
     "type": "command",
     "command": "~/dotfiles/bin/claude-statusline.sh"
-  },
-  "model": "sonnet"
+  }
 }
