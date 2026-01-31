@@ -6,6 +6,7 @@
       "Bash(gh pr diff:*)",
       "Bash(gh api:*)",
       "Bash(gh pr checks:*)",
+      "Bash(gh pr checkout:*)",
       "Bash(gh run view:*)",
       "Bash(git log:*)",
       "Bash(git fetch:*)",
@@ -58,5 +59,8 @@
   "statusLine": {
     "type": "command",
     "command": "~/dotfiles/bin/claude-statusline.sh"
+  },
+  "enabledPlugins": {
+    "ogrep@ogrep-marketplace": true
   }
 }
