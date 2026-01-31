@@ -8,3 +8,10 @@
     - ruby-build
     - uv
     - yarn
+
+- name: Install ogrep for semantic code search
+  ansible.builtin.command:
+    cmd: uv tool install "ogrep[ast]"
+  register: uv_ogrep
+  changed_when: "'Installed' in uv_ogrep.stdout"
+  failed_when: uv_ogrep.rc != 0 and 'already installed' not in uv_ogrep.stderr
