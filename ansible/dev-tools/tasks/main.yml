@@ -6,6 +6,7 @@
   with_items:
     - rbenv
     - ruby-build
+    - pyenv
     - uv
     - yarn
 
