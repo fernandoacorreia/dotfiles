@@ -63,5 +63,5 @@
   "enabledPlugins": {
     "ogrep@ogrep-marketplace": true
   },
-  "model": "sonnet"
+  "autoUpdatesChannel": "latest"
 }
