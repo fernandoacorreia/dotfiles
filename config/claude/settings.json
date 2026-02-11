@@ -63,5 +63,6 @@
   "enabledPlugins": {
     "ogrep@ogrep-marketplace": true
   },
-  "autoUpdatesChannel": "latest"
+  "autoUpdatesChannel": "latest",
+  "effortLevel": "low"
 }
