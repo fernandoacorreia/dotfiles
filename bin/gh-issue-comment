@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Add a comment to a GitHub issue from a text file.
+#
+# Usage: gh-issue-comment <github-issue-url> <file>
+#
+# Example: gh-issue-comment https://github.com/fernandoacorreia/borealis/issues/42 comment.md
+#
+set -o nounset -o errexit -o pipefail
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: gh-issue-comment <github-issue-url> <file>" >&2
+  exit 1
+fi
+
+ISSUE_URL="$1"
+FILE="$2"
+
+# Validate GitHub issue URL
+if ! echo "$ISSUE_URL" | grep -qE '^https://github\.com/[^/]+/[^/]+/issues/[0-9]+$'; then
+  echo "Error: Invalid GitHub issue URL: $ISSUE_URL" >&2
+  echo "Expected format: https://github.com/<owner>/<repo>/issues/<number>" >&2
+  exit 1
+fi
+
+# Check that file exists
+if [[ ! -f "$FILE" ]]; then
+  echo "Error: File not found: $FILE" >&2
+  exit 1
+fi
+
+# Extract owner, repo, and issue number from URL
+OWNER_REPO=$(echo "$ISSUE_URL" | sed -E 's|https://github\.com/([^/]+/[^/]+)/issues/[0-9]+|\1|')
+ISSUE_NUMBER=$(echo "$ISSUE_URL" | sed -E 's|.*/issues/([0-9]+)$|\1|')
+
+gh issue comment "$ISSUE_NUMBER" --body-file "$FILE" -R "$OWNER_REPO"
