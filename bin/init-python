@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "3.12" > .python-version
+
+pyenv local 3.12
+
+python -m venv .venv
+
+cat > .envrc <<'EOF'
+source .venv/bin/activate
+EOF
+
+echo "Python environment initialized."
+echo "Run 'direnv allow' to activate .envrc."
