@@ -7,6 +7,21 @@ pyenv local 3.12
 
 python -m venv .venv
 
+# Ensure .gitignore exists
+touch .gitignore
+
+# Add .venv to .gitignore if not already there
+if ! grep -qx '.venv' .gitignore; then
+  echo '.venv' >> .gitignore
+fi
+
+# Activate and upgrade pip
+source .venv/bin/activate
+pip install --upgrade pip
+
+# Create requirements.txt if missing
+touch requirements.txt
+
 cat > .envrc <<'EOF'
 source .venv/bin/activate
 EOF
