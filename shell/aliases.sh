@@ -51,3 +51,6 @@ alias lzd=lazydocker
 
 # Ripgrep
 alias rg-no-tests='rg --glob "!**/tests/**"'
+
+# Workmux
+alias wm='workmux'

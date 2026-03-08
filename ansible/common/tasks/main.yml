@@ -36,7 +36,6 @@
     - projects
     - scratch
     - secrets
-    - worktrees
 
 - name: Create directory for system-level extra binaries
   become: yes
