@@ -1,4 +1,11 @@
 ---
+- name: Tap homebrew repositories
+  community.general.homebrew_tap:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - raine/workmux
+
 - name: Install development tools and languages
   community.general.homebrew:
     name: "{{ item }}"
@@ -8,10 +15,12 @@
     - just
     - pnpm
     - poetry
+    - pyenv
+    - raine/workmux/workmux
     - rbenv
     - ruby-build
-    - pyenv
     - uv
+    - worktrunk
     - yarn
 
 - name: Install ogrep for semantic code search
