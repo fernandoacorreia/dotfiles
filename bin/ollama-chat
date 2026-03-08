@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Send a message to Ollama and print the response.
+#
+# Usage: ollama-chat <message>
+#
+# Environment variables:
+#   OLLAMA_MODEL  Model to use (default: llama3.1:8b)
+#   OLLAMA_URL    Ollama server URL (default: http://localhost:11434)
+#
+# Examples:
+#   ollama-chat "Hello!"
+#   OLLAMA_MODEL=gemma2 ollama-chat "What is 2+2?"
+#   OLLAMA_URL=http://remote:11434 ollama-chat "Hi"
+set -euo pipefail
+
+MODEL="${OLLAMA_MODEL:-llama3.1:8b}"
+URL="${OLLAMA_URL:-http://localhost:11434}"
+
+if [ $# -eq 0 ]; then
+  echo "Usage: ollama-chat <message>" >&2
+  exit 1
+fi
+
+curl -s "$URL/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --arg model "$MODEL" --arg content "$*" \
+    '{model: $model, messages: [{role: "user", content: $content}]}')" \
+  | jq -r '.choices[0].message.content'
