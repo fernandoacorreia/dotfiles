@@ -19,12 +19,14 @@
     path: "{{ home_dir }}/.claude/settings.json"
   register: claude_settings
 
-- name: Preserve existing ~/.claude/settings.json
-  command: mv "{{ home_dir }}/.claude/settings.json" "{{ home_dir }}/.claude/settings.json.backup"
-  when: claude_settings.stat.isreg is defined and claude_settings.stat.isreg and not claude_settings.stat.islnk
-
-- name: Create link for ~/.claude/settings.json
+- name: Remove legacy symlink for ~/.claude/settings.json
   file:
-    src: "{{ home_dir }}/dotfiles/config/claude/settings.json"
+    path: "{{ home_dir }}/.claude/settings.json"
+    state: absent
+  when: claude_settings.stat.islnk is defined and claude_settings.stat.islnk
+
+- name: Create ~/.claude/settings.json from template if missing
+  copy:
+    src: "{{ home_dir }}/dotfiles/templates/claude-settings.json"
     dest: "{{ home_dir }}/.claude/settings.json"
-    state: link
+    force: no

@@ -64,5 +64,5 @@
     "ogrep@ogrep-marketplace": true
   },
   "autoUpdatesChannel": "latest",
-  "effortLevel": "low"
+  "model": "opus"
 }
