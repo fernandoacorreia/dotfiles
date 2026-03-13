@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Fetches all remotes for every git repo under ~/projects.
+# Designed to run as a scheduled/background task — output is logged.
+#
+set -o nounset -o pipefail
+
+PROJECTS_DIR="$HOME/projects"
+LOG_DIR="$HOME/.local/log"
+LOG_FILE="$LOG_DIR/git-fetch-all.log"
+
+timestamp() {
+  date '+%Y-%m-%d %H:%M:%S'
+}
+
+log() {
+  echo "[$(timestamp)] $*" >> "$LOG_FILE"
+}
+
+mkdir -p "$LOG_DIR"
+
+if [[ ! -d "$PROJECTS_DIR" ]]; then
+  log "ERROR: $PROJECTS_DIR does not exist"
+  exit 1
+fi
+
+log "=== Starting git-fetch-all ==="
+
+TOTAL=0
+SUCCESS=0
+FAILED=0
+
+for DIR in "$PROJECTS_DIR"/*/; do
+  [[ -d "$DIR" ]] || continue
+  [[ -d "$DIR/.git" ]] || continue
+
+  REPO_NAME="$(basename "$DIR")"
+  TOTAL=$((TOTAL + 1))
+
+  if OUTPUT=$(cd "$DIR" && git fetch --all 2>&1); then
+    log "OK: $REPO_NAME"
+    SUCCESS=$((SUCCESS + 1))
+  else
+    log "FAIL: $REPO_NAME"
+    log "  $OUTPUT"
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+log "Done: $TOTAL repos, $SUCCESS ok, $FAILED failed"
+log ""

@@ -42,3 +42,10 @@
   file:
     path: /opt/bin
     state: directory
+
+- name: Schedule git-fetch-all cron job
+  cron:
+    name: "git-fetch-all"
+    minute: "0"
+    hour: "*"
+    job: "{{ home_dir }}/dotfiles/bin/git-fetch-all"
