@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+#
+# Repeatedly runs a command, multiple times.
+#
 
 usage() {
   echo "Usage: repeat-command -n <number> <command> [args...]" >&2
@@ -31,7 +34,7 @@ timestamp() {
   python3 -c "from datetime import datetime; print(datetime.now().strftime('%Y-%m-%dT%H-%M-%S.%f')[:23])"
 }
 
-log_dir="$HOME/.local/logs/repeat-command"
+log_dir="$HOME/.local/log/repeat-command"
 mkdir -p "$log_dir"
 
 log_file="$log_dir/$(timestamp).log"
