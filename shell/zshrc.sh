@@ -66,6 +66,11 @@ if command -v direnv &>/dev/null; then
   eval "$(direnv hook zsh)"
 fi
 
+# zoxide (must be at the end of .zshrc, after all other shell hooks)
+if command -v zoxide >/dev/null 2>&1 && [ -n "$ZSH_VERSION" ]; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
 # Support a local .zshrc script that's not saved to source control.
 if test -f $HOME/.local/.zshrc
 then
