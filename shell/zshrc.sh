@@ -67,6 +67,8 @@ if command -v direnv &>/dev/null; then
 fi
 
 # zoxide (must be at the end of .zshrc, after all other shell hooks)
+# Disable zoxide doctor: Claude Code injects shell hooks after .zshrc, triggering a false positive.
+export _ZO_DOCTOR=0
 if command -v zoxide >/dev/null 2>&1 && [ -n "$ZSH_VERSION" ]; then
   eval "$(zoxide init zsh --cmd cd)"
 fi
