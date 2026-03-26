@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 IMAGE_NAME="claude-sandbox"
 HOST_UID="$(id -u)"
 HOST_GID="$(id -g)"
 PROJECTS_DIR="$HOME/projects"
+
+SECRET_FILE=""
+cleanup() { [[ -n "${SECRET_FILE}" ]] && rm -f "${SECRET_FILE}"; }
+trap cleanup EXIT
 
 # --- Parse script flags (before -- or claude args) ---
 FORCE_BUILD=false
@@ -45,8 +49,11 @@ elif [[ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]]; then
 elif [[ -f "${HOME}/.claude/.credentials.json" ]]; then
     : # credentials will be available via the ~/.claude mount below
 elif KEYCHAIN_KEY="$(security find-generic-password -s "Claude Code" -w 2>/dev/null)"; then
-    export ANTHROPIC_API_KEY="${KEYCHAIN_KEY}"
-    AUTH_ARGS+=(-e "ANTHROPIC_API_KEY")
+    SECRET_FILE="$(mktemp)"
+    printf '%s' "${KEYCHAIN_KEY}" > "${SECRET_FILE}"
+    chmod 600 "${SECRET_FILE}"
+    unset KEYCHAIN_KEY
+    AUTH_ARGS+=(-v "${SECRET_FILE}:/run/secrets/api_key:ro")
 else
     echo "ERROR: No auth credentials found." >&2
     echo "  The macOS Keychain is not accessible inside a container." >&2
@@ -90,7 +97,7 @@ SECURITY_ARGS=(
 )
 
 # --- Run ---
-exec docker run \
+docker run \
     --rm \
     -it \
     -w "${CURRENT_DIR}" \
