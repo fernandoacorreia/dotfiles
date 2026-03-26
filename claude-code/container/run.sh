@@ -44,13 +44,16 @@ elif [[ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]]; then
     AUTH_ARGS+=(-e "ANTHROPIC_AUTH_TOKEN")
 elif [[ -f "${HOME}/.claude/.credentials.json" ]]; then
     : # credentials will be available via the ~/.claude mount below
+elif KEYCHAIN_KEY="$(security find-generic-password -s "Claude Code" -w 2>/dev/null)"; then
+    export ANTHROPIC_API_KEY="${KEYCHAIN_KEY}"
+    AUTH_ARGS+=(-e "ANTHROPIC_API_KEY")
 else
     echo "ERROR: No auth credentials found." >&2
     echo "  The macOS Keychain is not accessible inside a container." >&2
     echo "  Provide credentials via one of:" >&2
-    echo "    1. Run 'claude setup-token' on the host to create ~/.claude/.credentials.json" >&2
-    echo "    2. Set ANTHROPIC_API_KEY environment variable" >&2
-    echo "    3. Set ANTHROPIC_AUTH_TOKEN environment variable" >&2
+    echo "    1. Set ANTHROPIC_API_KEY environment variable" >&2
+    echo "    2. Set ANTHROPIC_AUTH_TOKEN environment variable" >&2
+    echo "    3. Run 'claude setup-token' on the host (requires Pro/Max subscription)" >&2
     exit 1
 fi
 
