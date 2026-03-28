@@ -13,5 +13,5 @@
     executable: /bin/bash
   when: node_check.rc != 0
   environment:
-    HOME: "{{ ansible_env.HOME }}"
-    XDG_CONFIG_HOME: "{{ ansible_env.XDG_CONFIG_HOME | default('') }}"
+    HOME: "{{ ansible_facts['env']['HOME'] }}"
+    XDG_CONFIG_HOME: "{{ ansible_facts['env']['XDG_CONFIG_HOME'] | default('') }}"
