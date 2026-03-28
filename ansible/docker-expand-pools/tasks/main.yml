@@ -1,0 +1,20 @@
+---
+- name: Expand Docker default-address-pools
+  block:
+    - name: Check if Docker daemon.json exists
+      stat:
+        path: "{{ home_dir }}/.docker/daemon.json"
+      register: docker_daemon_json
+
+    - name: Check Docker daemon.json for expanded pools setting
+      shell: python3 -c "import json,sys; c=json.load(open(sys.argv[1])); sys.exit(0 if {'base':'172.17.0.0/12','size':24} in c.get('default-address-pools',[]) else 1)" "{{ home_dir }}/.docker/daemon.json"
+      register: docker_pools_check
+      changed_when: false
+      failed_when: false
+      when: docker_daemon_json.stat.exists
+
+    - name: Run docker-expand-pools script
+      script: docker-expand-pools.py -y
+      when:
+        - docker_daemon_json.stat.exists
+        - docker_pools_check.rc | default(1) != 0

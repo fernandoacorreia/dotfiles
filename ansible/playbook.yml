@@ -33,6 +33,7 @@
   roles:
     - brew-utils
     - claude-code
+    - docker-expand-pools
     - fzf
     - gh
     - gitui
