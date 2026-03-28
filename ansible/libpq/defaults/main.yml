@@ -2,6 +2,8 @@
 packages:
   default:
     - libpq
+  Debian:
+    - libpq-dev
   LMDE:
     - libpq-dev
   Ubuntu:

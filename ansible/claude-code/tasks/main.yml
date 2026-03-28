@@ -1,6 +1,6 @@
 ---
 - name: Check if claude is already installed
-  command: command -v claude
+  shell: command -v claude
   register: claude_exists
   ignore_errors: true
   changed_when: false

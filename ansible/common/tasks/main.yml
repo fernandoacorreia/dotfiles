@@ -43,9 +43,16 @@
     path: /opt/bin
     state: directory
 
+- name: Check for crontab support
+  command: which crontab
+  register: crontab_check
+  changed_when: false
+  failed_when: false
+
 - name: Schedule git-fetch-all cron job
   cron:
     name: "git-fetch-all"
     minute: "0"
     hour: "*"
     job: "{{ home_dir }}/dotfiles/bin/git-fetch-all"
+  when: crontab_check.rc == 0

@@ -15,5 +15,6 @@
     - pillow
     - pre-commit
     - pstree
+    - tldr
     - yazi
     - zoxide
