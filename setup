@@ -67,6 +67,7 @@ macos_add_ssh_key_to_agent() {
   # Set config file
   if ! grep -q "${KEYFILE##*/}" ~/.ssh/config &>/dev/null; then
     cat <<EOF >> ~/.ssh/config
+IgnoreUnknown UseKeychain
 Host *
   AddKeysToAgent yes
   UseKeychain yes
