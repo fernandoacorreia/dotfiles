@@ -1,10 +1,12 @@
 Helpers for developing and testing dotfiles.
 
-## Container
+## Scripts
 
-Launches a fresh, ephemeral container with dotfiles mounted.
+All scripts are run from the repo root.
 
 ```
-dev/container          # mount dotfiles at ~/dotfiles (default)
-dev/container --bare   # mount at /mnt/dotfiles with a clean home directory
+dev/build              # build the container image
+dev/run                # mount dotfiles at ~/dotfiles (default)
+dev/run --bare         # mount at /mnt/dotfiles with a clean home directory
+dev/test               # run the full setup inside a container (output saved to dev/.output/)
 ```

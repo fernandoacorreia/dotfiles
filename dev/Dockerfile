@@ -3,7 +3,8 @@ FROM debian:trixie
 ARG HOST_UID=1000
 ARG HOST_GID=1000
 
-RUN apt-get update && apt-get install -y sudo \
+RUN apt-get update && apt-get install -y \
+    sudo curl git build-essential procps python3 file zsh \
     && rm -rf /var/lib/apt/lists/*
 
 # Create user with host uid/gid. If the GID already exists (e.g. macOS GID 20
@@ -19,3 +20,4 @@ RUN if getent group ${HOST_GID} >/dev/null 2>&1; then \
 
 USER debian
 RUN mkdir -p /home/debian/.ssh
+WORKDIR /home/debian

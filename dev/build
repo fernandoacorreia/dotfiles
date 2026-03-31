@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Builds the dev container image.
+#
+set -o nounset -o errexit -o pipefail
+
+IMAGE_NAME="dotfiles-dev"
+
+docker build --platform linux/amd64 \
+  --build-arg HOST_UID=$(id -u) \
+  --build-arg HOST_GID=$(id -g) \
+  -t $IMAGE_NAME -f dev/Dockerfile dev
