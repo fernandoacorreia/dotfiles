@@ -3,17 +3,19 @@
 # Runs the full dotfiles setup inside a container.
 # Output is captured to dev/.output/ with a timestamped filename.
 #
+# Usage: dev/test [--platform PLATFORM]
+#
 set -o nounset -o errexit -o pipefail
+source dev/lib.sh "$@"
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE_NAME="dotfiles-dev"
 TIMESTAMP="$(date +%Y-%m-%dT%H%M%S)"
 OUTPUT_DIR="$REPO_DIR/dev/.output"
 LOG_FILE="$OUTPUT_DIR/$TIMESTAMP.log"
 
 mkdir -p "$OUTPUT_DIR"
 
-dev/build
+dev/build --platform "$PLATFORM"
 
 echo "Running test container..."
 echo "Log file: $LOG_FILE"
@@ -25,7 +27,7 @@ if [ ! -f "$SSH_KEY" ]; then
   exit 1
 fi
 
-docker run --platform linux/amd64 --rm -t \
+docker run --platform "$PLATFORM" --rm -t \
   -v "$REPO_DIR:/home/vscode/dotfiles" \
   -v "$SSH_KEY:/home/vscode/.ssh/id_ed25519:ro" \
   "$IMAGE_NAME" \

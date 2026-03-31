@@ -2,28 +2,27 @@
 #
 # Launches a fresh, ephemeral container with dotfiles mounted.
 #
-# Usage: dev/run [--bare]
+# Usage: dev/run [--bare] [--platform PLATFORM]
 #   --bare   Mount dotfiles at /mnt/dotfiles with a clean home directory
 #   default  Mount dotfiles directly at ~/dotfiles (good for iterating)
 #
 set -o nounset -o errexit -o pipefail
+source dev/lib.sh "$@"
 
-IMAGE_NAME="dotfiles-dev"
 MODE="mount"
-
 if [[ "${1:-}" == "--bare" ]]; then
   MODE="bare"
 fi
 
-dev/build
+dev/build --platform "$PLATFORM"
 
 if [[ "$MODE" == "bare" ]]; then
-  docker run --platform linux/amd64 --rm -it \
+  docker run --platform "$PLATFORM" --rm -it \
     -v $HOME/.ssh/id_ed25519:/home/vscode/.ssh/id_ed25519 \
     -v $(pwd):/mnt/dotfiles \
     -w /home/vscode $IMAGE_NAME
 else
-  docker run --platform linux/amd64 --rm -it \
+  docker run --platform "$PLATFORM" --rm -it \
     -v $HOME/.ssh/id_ed25519:/home/vscode/.ssh/id_ed25519 \
     -v $(pwd):/home/vscode/dotfiles \
     -w /home/vscode/dotfiles $IMAGE_NAME

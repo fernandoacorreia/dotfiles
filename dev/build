@@ -2,11 +2,12 @@
 #
 # Builds the dev container image.
 #
+# Usage: dev/build [--platform PLATFORM]
+#
 set -o nounset -o errexit -o pipefail
+source dev/lib.sh "$@"
 
-IMAGE_NAME="dotfiles-dev"
-
-docker build --platform linux/amd64 \
+docker build --platform "$PLATFORM" \
   --build-arg HOST_UID=$(id -u) \
   --build-arg HOST_GID=$(id -g) \
   -t $IMAGE_NAME -f dev/Dockerfile dev
