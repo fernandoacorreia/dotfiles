@@ -19,12 +19,12 @@ dev/build
 
 if [[ "$MODE" == "bare" ]]; then
   docker run --platform linux/amd64 --rm -it \
-    -v $HOME/.ssh/id_ed25519:/home/debian/.ssh/id_ed25519 \
+    -v $HOME/.ssh/id_ed25519:/home/vscode/.ssh/id_ed25519 \
     -v $(pwd):/mnt/dotfiles \
-    -w /home/debian $IMAGE_NAME
+    -w /home/vscode $IMAGE_NAME
 else
   docker run --platform linux/amd64 --rm -it \
-    -v $HOME/.ssh/id_ed25519:/home/debian/.ssh/id_ed25519 \
-    -v $(pwd):/home/debian/dotfiles \
-    -w /home/debian/dotfiles $IMAGE_NAME
+    -v $HOME/.ssh/id_ed25519:/home/vscode/.ssh/id_ed25519 \
+    -v $(pwd):/home/vscode/dotfiles \
+    -w /home/vscode/dotfiles $IMAGE_NAME
 fi

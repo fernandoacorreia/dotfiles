@@ -26,9 +26,8 @@ if [ ! -f "$SSH_KEY" ]; then
 fi
 
 docker run --platform linux/amd64 --rm -t \
-  -e IN_CONTAINER=true \
-  -v "$REPO_DIR:/home/debian/dotfiles" \
-  -v "$SSH_KEY:/home/debian/.ssh/id_ed25519:ro" \
+  -v "$REPO_DIR:/home/vscode/dotfiles" \
+  -v "$SSH_KEY:/home/vscode/.ssh/id_ed25519:ro" \
   "$IMAGE_NAME" \
   bash -c 'ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null && bash ~/dotfiles/setup' 2>&1 | tee "$LOG_FILE"
 EXIT_CODE=${PIPESTATUS[0]}
