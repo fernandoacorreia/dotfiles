@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# Launches a fresh, ephemeral Debian container with dotfiles mounted.
+# Launches a fresh, ephemeral container with dotfiles mounted.
 #
-# Usage: dev/debian-container [--bare]
+# Usage: dev/container [--bare]
 #   --bare   Mount dotfiles at /mnt/dotfiles with a clean home directory
 #   default  Mount dotfiles directly at ~/dotfiles (good for iterating)
 #
 set -o nounset -o errexit -o pipefail
 
-IMAGE_NAME="dotfiles-debian-dev"
+IMAGE_NAME="dotfiles-dev"
 MODE="mount"
 
 if [[ "${1:-}" == "--bare" ]]; then
@@ -18,7 +18,7 @@ fi
 docker build --platform linux/amd64 \
   --build-arg HOST_UID=$(id -u) \
   --build-arg HOST_GID=$(id -g) \
-  -t $IMAGE_NAME dev/dotfiles-debian-dev-image
+  -t $IMAGE_NAME -f dev/Dockerfile dev
 
 if [[ "$MODE" == "bare" ]]; then
   docker run --platform linux/amd64 --rm -it -v $HOME/.ssh/id_ed25519:/home/debian/.ssh/id_ed25519 -v $(pwd):/mnt/dotfiles -w /home/debian $IMAGE_NAME
