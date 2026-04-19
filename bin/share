@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+PORT="${1:-8000}"
+
+# Try Wi-Fi first, fallback to Ethernet
+IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1)
+
+if [ -z "$IP" ]; then
+  echo "Could not determine local IP address"
+  exit 1
+fi
+
+echo "👉 Share this URL:"
+echo "   http://$IP:$PORT"
+echo ""
+
+python3 -m http.server "$PORT"
