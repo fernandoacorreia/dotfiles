@@ -8,6 +8,7 @@
     - direnv
     - fnm
     - git-filter-repo
+    - hexyl
     - k9s
     - kubernetes-cli
     - lazydocker
