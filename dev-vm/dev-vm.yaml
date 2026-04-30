@@ -41,6 +41,12 @@ ssh:
   # Set to true if you want every key in ~/.ssh/*.pub to also have access.
   loadDotSSHPubKeys: false
 
+# Skip Lima's bundled containerd + nerdctl install (~245 MB download).
+# We install Docker CE in scripts/dev-setup.sh instead.
+containerd:
+  system: false
+  user: false
+
 # Lima 2.x auto-forwards only guest ports bound on 127.0.0.1. Ports bound
 # on 0.0.0.0 require an explicit portForwards entry. Declare 3000/8088 here
 # so they work regardless of bind address.
