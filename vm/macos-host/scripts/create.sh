@@ -13,6 +13,11 @@ if ! command -v limactl >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v yq >/dev/null 2>&1; then
+    echo "yq not found. Run scripts/install-prereqs.sh first." >&2
+    exit 1
+fi
+
 if [ ! -d "${HOME}/dev-vm-shared" ]; then
     echo "${HOME}/dev-vm-shared missing. Run scripts/install-prereqs.sh first." >&2
     exit 1
@@ -22,6 +27,19 @@ fi
 if ! limactl list --quiet | grep -qx "${VM_NAME}"; then
     echo "==> Creating VM '${VM_NAME}' from ${YAML}"
     limactl create --name="${VM_NAME}" --tty=false "${YAML}"
+
+    # Strip mounts inherited from template:_default/mounts (notably ~).
+    # See dev-vm.yaml for context. Must run before the first start, since
+    # mounts are realized at start time.
+    LIMA_YAML="${HOME}/.lima/${VM_NAME}/lima.yaml"
+    yq -i '.mounts |= map(select(.location == "~/dev-vm-shared"))' "${LIMA_YAML}"
+    remaining="$(yq '.mounts | length' "${LIMA_YAML}")"
+    if [ "${remaining}" != "1" ]; then
+        echo "Mount scrub failed: expected 1 mount in ${LIMA_YAML}, got ${remaining}." >&2
+        yq '.mounts' "${LIMA_YAML}" >&2
+        exit 1
+    fi
+    echo "==> Scrubbed inherited mounts; only ~/dev-vm-shared remains."
 fi
 
 # Start if not running.

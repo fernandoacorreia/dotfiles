@@ -56,6 +56,52 @@ else
 fi
 
 echo
+echo "Checking host-path sharing (only ~/dev-vm-shared should be mounted)..."
+
+# Check A: resolved per-instance Lima config.
+# Catches inherited mounts (e.g. ~ via template:_default/mounts) that bypass
+# scripts/create.sh's scrub or were added later via `limactl edit`.
+LIMA_YAML="${HOME}/.lima/${VM_NAME}/lima.yaml"
+if ! command -v yq >/dev/null 2>&1; then
+    printf "  FAIL  yq missing (run scripts/install-prereqs.sh)\n"
+    fail=1
+elif [ ! -f "${LIMA_YAML}" ]; then
+    printf "  FAIL  resolved Lima config not found: %s\n" "${LIMA_YAML}"
+    fail=1
+else
+    extras="$(yq -r '.mounts[] | select(.location != "~/dev-vm-shared") | .location' "${LIMA_YAML}")"
+    if [ -z "${extras}" ]; then
+        printf "  PASS  only ~/dev-vm-shared in resolved lima.yaml\n"
+    else
+        printf "  FAIL  extra mounts in %s:\n" "${LIMA_YAML}"
+        while IFS= read -r loc; do printf "          %s\n" "${loc}"; done <<<"${extras}"
+        fail=1
+    fi
+fi
+
+# Check B: live virtiofs mount table inside the VM.
+# Catches any drift between the resolved config and what the kernel actually
+# mounted at boot.
+if [ "$(limactl list --format='{{.Status}}' "${VM_NAME}" 2>/dev/null)" = "Running" ]; then
+    guest_user="$(limactl shell "${VM_NAME}" -- whoami 2>/dev/null | tr -d '\r')"
+    expected="/home/${guest_user}/dev-vm-shared"
+    targets="$(limactl shell "${VM_NAME}" -- findmnt -t virtiofs -n -o TARGET 2>/dev/null | tr -d '\r')"
+    extras="$(printf "%s\n" "${targets}" | grep -v -x "${expected}" | grep -v '^$' || true)"
+    if [ -z "${extras}" ] && [ -n "${targets}" ]; then
+        printf "  PASS  only %s mounted inside VM (virtiofs)\n" "${expected}"
+    elif [ -z "${targets}" ]; then
+        printf "  FAIL  no virtiofs mounts inside VM (expected %s)\n" "${expected}"
+        fail=1
+    else
+        printf "  FAIL  extra virtiofs mounts inside VM:\n"
+        while IFS= read -r t; do printf "          %s\n" "${t}"; done <<<"${extras}"
+        fail=1
+    fi
+else
+    echo "  SKIP  live virtiofs mount check (VM not running)"
+fi
+
+echo
 if [ "${fail}" -eq 0 ]; then
     echo "All checks passed."
 else

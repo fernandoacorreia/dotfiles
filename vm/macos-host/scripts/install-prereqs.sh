@@ -15,6 +15,15 @@ else
     echo "==> $(limactl --version | head -1)"
 fi
 
+# yq is used by create.sh and doctor.sh to scrub/validate the resolved Lima
+# config. See dev-vm.yaml for why we need to scrub mounts.
+if command -v yq >/dev/null 2>&1; then
+    echo "yq already installed: $(yq --version)"
+else
+    echo "==> Installing yq"
+    brew install yq
+fi
+
 # Host-side mount target for the VM (see dev-vm.yaml `mounts:`).
 mkdir -p "${HOME}/dev-vm-shared"
 

@@ -37,6 +37,13 @@ user:
 # content on the host and inside the VM.
 # Create the directory on the Mac before `create.sh`:
 #     mkdir -p ~/dev-vm-shared
+#
+# `template:docker` transitively inherits `template:_default/mounts`, which
+# adds `- location: "~"` (the entire host home). Lima concatenates inherited
+# and child mounts and offers no subtract syntax, so `scripts/create.sh`
+# scrubs the resolved per-instance config (~/.lima/dev-vm/lima.yaml) after
+# `limactl create` to keep only the entry below. `scripts/doctor.sh` then
+# validates that no other mount leaks in.
 mounts:
   - location: "~/dev-vm-shared"
     mountPoint: "{{.Home}}/dev-vm-shared"
