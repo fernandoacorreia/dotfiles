@@ -13,6 +13,7 @@
   with_items:
     - humanlog
     - just
+    - pipx
     - pnpm
     - poetry
     - pyenv
