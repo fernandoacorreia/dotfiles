@@ -6,6 +6,22 @@
 
 set -euo pipefail
 
+# ---------- Disable unattended-upgrades ----------
+# Disables the service AND the apt-daily timers that schedule it. Just
+# disabling unattended-upgrades.service alone leaves the timers running,
+# which is the actual source of "Could not get apt lock" errors.
+for unit in unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer; do
+    if systemctl is-enabled --quiet "${unit}" 2>/dev/null; then
+        echo "==> Disabling ${unit}"
+        sudo systemctl disable --now "${unit}"
+    fi
+done
+
+# ---------- System updates ----------
+echo "==> Updating system packages"
+sudo apt-get update -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+
 # ---------- Docker ----------
 if ! command -v docker >/dev/null 2>&1; then
     echo "==> Installing Docker"
@@ -27,6 +43,45 @@ if ! command -v docker >/dev/null 2>&1; then
     echo "==> Docker installed. New shells will have docker group membership."
 else
     echo "==> Docker already installed, skipping"
+fi
+
+# ---------- Docker daemon config (log rotation) ----------
+# Without this, json-file logs grow unbounded and can fill the disk.
+DAEMON_JSON=/etc/docker/daemon.json
+read -r -d '' DESIRED_DAEMON_JSON <<'EOF' || true
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+EOF
+if ! sudo test -f "${DAEMON_JSON}" \
+   || ! echo "${DESIRED_DAEMON_JSON}" | sudo cmp -s - "${DAEMON_JSON}"; then
+    echo "==> Configuring Docker log rotation"
+    echo "${DESIRED_DAEMON_JSON}" | sudo tee "${DAEMON_JSON}" >/dev/null
+    sudo systemctl restart docker
+else
+    echo "==> Docker log rotation already configured"
+fi
+
+# ---------- Swap (2 GiB swap file) ----------
+# Mac SSD usage stays at ~0 until swap is actually used (Lima VM disk is sparse).
+SWAPFILE=/swapfile
+if ! swapon --show=NAME --noheadings | grep -qx "${SWAPFILE}"; then
+    echo "==> Creating 2 GiB swap file at ${SWAPFILE}"
+    if [ ! -f "${SWAPFILE}" ]; then
+        sudo fallocate -l 2G "${SWAPFILE}"
+        sudo chmod 600 "${SWAPFILE}"
+        sudo mkswap "${SWAPFILE}"
+    fi
+    sudo swapon "${SWAPFILE}"
+    if ! grep -q "^${SWAPFILE} " /etc/fstab; then
+        echo "${SWAPFILE} none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
+    fi
+else
+    echo "==> Swap already active on ${SWAPFILE}"
 fi
 
 # ---------- Add your own setup below ----------
