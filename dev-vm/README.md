@@ -66,6 +66,8 @@ portForwards:
 | `./scripts/doctor.sh` | Sanity checks: VM running, SSH works, ports forwarded |
 | `./scripts/delete.sh` | Permanently delete the VM (typed confirmation) |
 
+If `ssh dev-vm` reports "Connection refused" after `start.sh`, Lima has picked a new local SSH port — re-run `./scripts/ssh-config-install.sh` (or see [Troubleshooting](#troubleshooting) for a one-line fix that avoids this).
+
 ## Customizing VM size
 
 Edit `cpus`, `memory`, or `disk` in `dev-vm.yaml`, then:
@@ -161,7 +163,11 @@ The wrapper scripts cover the common cases. For everything else, `limactl` is wh
 
 **Port 3000/8088 not reachable from Mac**: verify the VM is running (`./scripts/status.sh`) and that the service inside the VM is actually listening (`ssh dev-vm 'ss -ltn'`). `./scripts/doctor.sh` runs an end-to-end check.
 
-**SSH says "Connection refused" or wrong port**: re-run `./scripts/ssh-config-install.sh`. Lima sometimes picks a new local SSH port between VM rebuilds, and that script refreshes the managed block in `~/.ssh/config`.
+**SSH says "Connection refused" or wrong port**: re-run `./scripts/ssh-config-install.sh`. Lima sometimes picks a new local SSH port between VM restarts, and that script refreshes the managed block in `~/.ssh/config`. To avoid having to re-run it, replace the managed block with a single line that includes Lima's own (always up-to-date) config:
+
+```sshconfig
+Include ~/.lima/dev-vm/ssh.config
+```
 
 **VM is wedged / won't start**: `./scripts/delete.sh && ./scripts/create.sh`. The dev environment is reproducible from `dev-vm.yaml` + `dev-setup.sh`, so rebuilds are cheap.
 
