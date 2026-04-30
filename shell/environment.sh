@@ -14,11 +14,6 @@ export LESS='--quit-if-one-screen --no-init --RAW-CONTROL-CHARS'
 # sbt
 export SBT_OPTS="-Xss256m -Xmx6g"
 
-# zsh vi mode
-# https://dougblack.io/words/zsh-vi-mode.html
-bindkey -v
-export KEYTIMEOUT=1
-
 # neovim
 export EDITOR=nvim
 
