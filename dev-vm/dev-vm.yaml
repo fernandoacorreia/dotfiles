@@ -1,0 +1,66 @@
+# Lima VM config — Ubuntu Server ARM64 dev VM on Apple Silicon.
+# VM name is derived from this filename (so: "dev-vm").
+# Reference: https://lima-vm.io/docs/config/
+
+# Native ARM64 virtualization on Apple Silicon (no emulation).
+arch: "aarch64"
+vmType: "vz"
+mountType: "virtiofs"
+
+# Ubuntu 24.04 LTS server cloud image (ARM64).
+# To switch to 26.04 LTS, replace the URL below with:
+#   https://cloud-images.ubuntu.com/releases/26.04/release/ubuntu-26.04-server-cloudimg-arm64.img
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+cpus: 4
+memory: "8GiB"
+disk: "80GiB"
+
+# Override Lima 2.x default of /home/<user>.guest so the guest home matches
+# the username with no suffix. Skipping the default also skips Lima's
+# auto-generated /home/<user>.linux compatibility symlink.
+user:
+  home: "/home/{{.User}}"
+
+# Mount a dedicated share dir (NOT your whole Mac home) into the VM at the
+# guest user's `~/dev-vm-shared`, so home-relative paths resolve to the same
+# content on the host and inside the VM.
+# Create the directory on the Mac before `create.sh`:
+#     mkdir -p ~/dev-vm-shared
+mounts:
+  - location: "~/dev-vm-shared"
+    mountPoint: "{{.Home}}/dev-vm-shared"
+    writable: true
+
+ssh:
+  # false = only Lima's own auto-generated key (~/.lima/_config/user.pub) is
+  # authorized. `limactl shell dev-vm` and `ssh dev-vm` (after running
+  # ssh-config-install.sh) still work because they use that same key.
+  # Set to true if you want every key in ~/.ssh/*.pub to also have access.
+  loadDotSSHPubKeys: false
+
+# Lima 2.x auto-forwards only guest ports bound on 127.0.0.1. Ports bound
+# on 0.0.0.0 require an explicit portForwards entry. Declare 3000/8088 here
+# so they work regardless of bind address.
+portForwards:
+  - guestPort: 3000
+    hostIP: "127.0.0.1"
+  - guestPort: 8088
+    hostIP: "127.0.0.1"
+
+# First-boot base packages. The user-customizable part (Docker, languages,
+# etc.) lives in scripts/dev-setup.sh and is run by scripts/create.sh
+# after the VM finishes booting — keeps base provisioning deterministic
+# and lets users iterate on dev-setup.sh without rebuilding the VM.
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y
+      apt-get install -y \
+        ca-certificates curl gnupg lsb-release \
+        git vim htop tmux jq unzip rsync
