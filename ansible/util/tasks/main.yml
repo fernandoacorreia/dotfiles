@@ -16,6 +16,7 @@
     - tree
     - unzip
     - watch
+    - yq
     - zip
 
 - name: Install LMDE and Ubuntu utilities
