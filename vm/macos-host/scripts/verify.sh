@@ -346,9 +346,10 @@ if vm_running; then
         fail=1; fail_count=$((fail_count + 1))
     fi
 
-    # 11. Docker group membership
-    check "user is in docker group inside VM" \
-        ssh -o BatchMode=yes dev-vm 'id -nG | tr " " "\n" | grep -qx docker'
+    # 11. Docker is running in rootless mode (template:docker default —
+    # daemon runs as the user, so no docker group membership is needed).
+    check "Docker daemon is rootless" \
+        ssh -o BatchMode=yes dev-vm 'docker info 2>/dev/null | grep -qi "rootless"'
 
     # 12. Ubuntu version
     if [ "$(ssh -o BatchMode=yes dev-vm 'lsb_release -rs' 2>/dev/null)" = "24.04" ]; then
@@ -420,13 +421,15 @@ fi
 phase "Phase 4: idempotency & hooks"
 
 if vm_running; then
-    # 16. dev-setup.sh re-run is safe
+    # 16. dev-setup.sh re-run is safe (idempotent). On a second run the
+    # Docker log-rotation block should report "already configured" rather
+    # than rewriting the file or restarting the daemon.
     if bash ./scripts/reprovision.sh >/tmp/dev-vm-reprov.log 2>&1; then
-        if grep -q 'Docker already installed, skipping' /tmp/dev-vm-reprov.log; then
-            printf "  PASS  reprovision.sh skips Docker (idempotent)\n"
+        if grep -q 'Docker log rotation already configured' /tmp/dev-vm-reprov.log; then
+            printf "  PASS  reprovision.sh is idempotent (log rotation already configured)\n"
             pass_count=$((pass_count + 1))
         else
-            printf "  FAIL  reprovision.sh ran but did not log 'Docker already installed' (see /tmp/dev-vm-reprov.log)\n"
+            printf "  FAIL  reprovision.sh ran but did not log 'Docker log rotation already configured' (see /tmp/dev-vm-reprov.log)\n"
             fail=1; fail_count=$((fail_count + 1))
         fi
     else

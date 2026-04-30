@@ -38,7 +38,7 @@ echo "==> Running scripts/dev-setup.sh inside VM"
 limactl shell --workdir=/tmp "${VM_NAME}" bash < ./scripts/dev-setup.sh
 
 # Kill the per-VM SSH ControlMaster so subsequent ssh sessions pick up
-# any group membership changes from dev-setup.sh (e.g. the docker group).
+# any group/env changes made by dev-setup.sh or the user hook.
 ssh -F "${HOME}/.lima/${VM_NAME}/ssh.config" -O exit "lima-${VM_NAME}" 2>/dev/null || true
 
 cat <<'EOF'

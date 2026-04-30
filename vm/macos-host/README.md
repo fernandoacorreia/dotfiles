@@ -20,16 +20,30 @@ ssh dev-vm                          # done
 
 Inside the VM, ports `3000` and `8088` are reachable from the Mac as `http://localhost:3000` and `http://localhost:8088`. See [Port forwarding](#port-forwarding) below if you need additional ports.
 
+## Docker
+
+Docker comes from Lima's official [`template:docker`](https://github.com/lima-vm/lima/blob/master/templates/docker.yaml), inherited via `base:` in `dev-vm.yaml`. It runs **rootless** (Docker daemon under your user, not root), with a few niceties:
+
+- The Docker socket inside the VM is forwarded to the Mac at `~/.lima/dev-vm/sock/docker.sock`. To drive Docker on the Mac with the VM as the engine:
+  ```bash
+  export DOCKER_HOST=unix://$HOME/.lima/dev-vm/sock/docker.sock
+  docker run --rm hello-world
+  ```
+- Inside containers, `host.docker.internal` resolves to the Mac (mapped to `host.lima.internal` in the VM's `/etc/hosts`), so containers can reach services running natively on macOS.
+- On Apple Silicon, x86_64 containers run via Rosetta with AOT caching when launched with `--device=lima-vm.io/rosetta=cached`.
+
+Log rotation for the Docker daemon is configured in `scripts/dev-setup.sh` (writes to `~/.config/docker/daemon.json`).
+
 ## Customizing the dev environment
 
-The user-customizable provisioning script is `scripts/dev-setup.sh`. It runs once during `create.sh` and any time you call `reprovision.sh`. The initial stub installs Docker only — extend it with whatever you need.
+The user-customizable provisioning script is `scripts/dev-setup.sh`. It runs once during `create.sh` and any time you call `reprovision.sh`. The stub handles non-Docker hardening (disable unattended-upgrades, system updates, Docker log rotation, swap) — extend it with whatever you need.
 
 ```bash
 $EDITOR scripts/dev-setup.sh
 ./scripts/reprovision.sh            # re-run inside the existing VM
 ```
 
-`dev-setup.sh` should be idempotent (safe to re-run). The Docker block in the stub is already idempotent — follow the same pattern for additions.
+`dev-setup.sh` should be idempotent (safe to re-run). The existing blocks are already idempotent — follow the same pattern for additions.
 
 ### Per-machine hook (outside the repo)
 

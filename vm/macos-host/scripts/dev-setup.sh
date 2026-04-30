@@ -2,7 +2,10 @@
 # Customizable per-user provisioning. Runs once during scripts/create.sh,
 # and any time you call scripts/reprovision.sh. Idempotent: safe to re-run.
 #
-# Initial stub installs Docker only. Add your own tools below.
+# Docker itself is installed by Lima's template:docker (rootless) — see
+# dev-vm.yaml. This script handles the non-Docker hardening (disable
+# unattended-upgrades, system updates, Docker log rotation, swap) and
+# the per-machine user hook. Add your own tools below.
 
 set -euo pipefail
 
@@ -22,32 +25,11 @@ echo "==> Updating system packages"
 sudo apt-get update -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
-# ---------- Docker ----------
-if ! command -v docker >/dev/null 2>&1; then
-    echo "==> Installing Docker"
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-        | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-    codename="$(lsb_release -cs)"
-    echo "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${codename} stable" \
-        | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-
-    sudo apt-get update -y
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        docker-ce docker-ce-cli containerd.io \
-        docker-buildx-plugin docker-compose-plugin
-
-    sudo usermod -aG docker "$USER"
-    echo "==> Docker installed. New shells will have docker group membership."
-else
-    echo "==> Docker already installed, skipping"
-fi
-
 # ---------- Docker daemon config (log rotation) ----------
 # Without this, json-file logs grow unbounded and can fill the disk.
-DAEMON_JSON=/etc/docker/daemon.json
+# Rootless Docker reads daemon config from ~/.config/docker/daemon.json
+# and is managed via the per-user systemd unit (`systemctl --user`).
+DAEMON_JSON="${HOME}/.config/docker/daemon.json"
 read -r -d '' DESIRED_DAEMON_JSON <<'EOF' || true
 {
   "log-driver": "json-file",
@@ -57,11 +39,12 @@ read -r -d '' DESIRED_DAEMON_JSON <<'EOF' || true
   }
 }
 EOF
-if ! sudo test -f "${DAEMON_JSON}" \
-   || ! echo "${DESIRED_DAEMON_JSON}" | sudo cmp -s - "${DAEMON_JSON}"; then
+mkdir -p "$(dirname "${DAEMON_JSON}")"
+if [ ! -f "${DAEMON_JSON}" ] \
+   || ! echo "${DESIRED_DAEMON_JSON}" | cmp -s - "${DAEMON_JSON}"; then
     echo "==> Configuring Docker log rotation"
-    echo "${DESIRED_DAEMON_JSON}" | sudo tee "${DAEMON_JSON}" >/dev/null
-    sudo systemctl restart docker
+    echo "${DESIRED_DAEMON_JSON}" > "${DAEMON_JSON}"
+    systemctl --user restart docker
 else
     echo "==> Docker log rotation already configured"
 fi
