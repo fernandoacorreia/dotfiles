@@ -59,13 +59,15 @@ limactl shell --workdir=/tmp "${VM_NAME}" bash < ./scripts/dev-setup.sh
 # any group/env changes made by dev-setup.sh or the user hook.
 ssh -F "${HOME}/.lima/${VM_NAME}/ssh.config" -O exit "lima-${VM_NAME}" 2>/dev/null || true
 
+# Ensure ~/.ssh/config includes Lima's per-instance configs. Idempotent.
+./scripts/ssh-config-install.sh
+
 cat <<'EOF'
 
 ==> VM is ready.
 
 Next steps:
-  ./scripts/ssh-config-install.sh    # add `Host dev-vm` to ~/.ssh/config
-  ssh dev-vm                         # connect
+  ssh lima-dev-vm    # connect
 
 Ports 3000 and 8088 inside the VM are auto-forwarded to localhost on this Mac.
 EOF

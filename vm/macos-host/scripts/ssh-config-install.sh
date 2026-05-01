@@ -1,56 +1,45 @@
 #!/bin/bash
-# Add (or refresh) a `Host dev-vm` block in ~/.ssh/config so `ssh dev-vm`
-# connects to the Lima VM. Re-running replaces the managed block.
+# Add `Include ~/.lima/*/ssh.config` to ~/.ssh/config so `ssh lima-<vm>`
+# always uses Lima's per-instance config (which Lima rewrites with the
+# current forwarded port on every VM start). Idempotent.
 set -euo pipefail
 
-VM_NAME="dev-vm"
 SSH_CONFIG="${HOME}/.ssh/config"
 BEGIN="# >>> vms (lima) >>>"
 END="# <<< vms (lima) <<<"
-
-if ! limactl list --quiet | grep -qx "${VM_NAME}"; then
-    echo "VM '${VM_NAME}' does not exist. Run scripts/create.sh first." >&2
-    exit 1
-fi
-
-# Pull the auto-generated SSH config from Lima and rewrite the Host line.
-lima_ssh_config="${HOME}/.lima/${VM_NAME}/ssh.config"
-if [ ! -f "${lima_ssh_config}" ]; then
-    echo "Lima SSH config not found at ${lima_ssh_config}." >&2
-    echo "Make sure the VM is started: ./scripts/start.sh" >&2
-    exit 1
-fi
-lima_config="$(cat "${lima_ssh_config}")"
-
-# Replace `Host lima-${VM_NAME}` with `Host ${VM_NAME}`.
-managed_block="$(printf '%s\n%s\n%s\n' \
-    "${BEGIN}" \
-    "$(printf '%s' "${lima_config}" | sed "s/^Host lima-${VM_NAME}\$/Host ${VM_NAME}/")" \
-    "${END}")"
+INCLUDE_LINE="Include ~/.lima/*/ssh.config"
 
 mkdir -p "${HOME}/.ssh"
 chmod 700 "${HOME}/.ssh"
 touch "${SSH_CONFIG}"
 chmod 600 "${SSH_CONFIG}"
 
-# Strip any previous managed block, then append the fresh one.
+# ssh reads Include directives in order, and the first value wins for any
+# given option. Put the managed block at the top so per-instance settings
+# (Hostname/Port/IdentityFile) are picked up before any later overrides.
+managed_block="$(printf '%s\n%s\n%s\n' "${BEGIN}" "${INCLUDE_LINE}" "${END}")"
+
 tmp="$(mktemp)"
 trap 'rm -f "${tmp}"' EXIT
+
+# Strip any previous managed block.
 awk -v b="${BEGIN}" -v e="${END}" '
     $0==b {skip=1; next}
     $0==e {skip=0; next}
     !skip {print}
 ' "${SSH_CONFIG}" > "${tmp}"
 
-# Ensure trailing newline before appending.
-if [ -s "${tmp}" ] && [ "$(tail -c1 "${tmp}" | wc -l)" -eq 0 ]; then
-    printf '\n' >> "${tmp}"
-fi
-printf '%s\n' "${managed_block}" >> "${tmp}"
+# Prepend the fresh block.
+prepended="$(mktemp)"
+{
+    printf '%s\n\n' "${managed_block}"
+    cat "${tmp}"
+} > "${prepended}"
 
-mv "${tmp}" "${SSH_CONFIG}"
+mv "${prepended}" "${SSH_CONFIG}"
+rm -f "${tmp}"
 chmod 600 "${SSH_CONFIG}"
 trap - EXIT
 
-echo "==> Wrote managed 'Host ${VM_NAME}' block to ${SSH_CONFIG}"
-echo "    Try it:  ssh ${VM_NAME}"
+echo "==> Wrote managed Lima Include block to ${SSH_CONFIG}"
+echo "    Try it:  ssh lima-dev-vm"

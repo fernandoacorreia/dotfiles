@@ -26,7 +26,7 @@ check "VM '${VM_NAME}' running" bash -c "[ \"\$(limactl list --format='{{.Status
 
 echo
 echo "Checking SSH..."
-check "ssh ${VM_NAME} works" ssh -o BatchMode=yes -o ConnectTimeout=5 "${VM_NAME}" true
+check "ssh lima-${VM_NAME} works" ssh -o BatchMode=yes -o ConnectTimeout=5 "lima-${VM_NAME}" true
 check "limactl shell works" limactl shell "${VM_NAME}" true
 
 echo

@@ -1,4 +1,4 @@
 #!/bin/bash
-# SSH into the VM using the alias set up by ssh-config-install.sh.
+# SSH into the VM using the Include block set up by ssh-config-install.sh.
 set -euo pipefail
-exec ssh dev-vm "$@"
+exec ssh lima-dev-vm "$@"

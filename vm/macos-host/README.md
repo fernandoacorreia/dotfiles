@@ -1,6 +1,6 @@
 # Ubuntu ARM64 VM on macOS (Lima)
 
-A turnkey, terminal-only Ubuntu Server VM for Apple Silicon Macs (macOS 26 Tahoe), built on [Lima](https://lima-vm.io). Native ARM64 virtualization (Apple Virtualization framework, no emulation), accessible by `ssh dev-vm`, with ports `3000` and `8088` auto-forwarded to `localhost` on the Mac.
+A turnkey, terminal-only Ubuntu Server VM for Apple Silicon Macs (macOS 26 Tahoe), built on [Lima](https://lima-vm.io). Native ARM64 virtualization (Apple Virtualization framework, no emulation), accessible by `ssh lima-dev-vm`, with ports `3000` and `8088` auto-forwarded to `localhost` on the Mac.
 
 ## Prerequisites
 
@@ -13,9 +13,8 @@ SSH access is provided automatically: Lima generates its own keypair (`~/.lima/_
 
 ```bash
 ./scripts/install-prereqs.sh        # brew install lima
-./scripts/create.sh                 # ~5-10 min on first run
-./scripts/ssh-config-install.sh     # adds `Host dev-vm` to ~/.ssh/config
-ssh dev-vm                          # done
+./scripts/create.sh                 # ~5-10 min; also adds `Include ~/.lima/*/ssh.config` to ~/.ssh/config
+ssh lima-dev-vm                     # done
 ```
 
 Inside the VM, ports `3000` and `8088` are reachable from the Mac as `http://localhost:3000` and `http://localhost:8088`. See [Port forwarding](#port-forwarding) below if you need additional ports.
@@ -75,12 +74,10 @@ portForwards:
 | `./scripts/stop.sh` | Stop the VM |
 | `./scripts/status.sh` | Show VM status and configured ports |
 | `./scripts/shell.sh` | Interactive shell via `limactl` (works without SSH config) |
-| `./scripts/ssh.sh` | `ssh dev-vm` |
+| `./scripts/ssh.sh` | `ssh lima-dev-vm` |
 | `./scripts/reprovision.sh` | Re-run `scripts/dev-setup.sh` inside the VM |
 | `./scripts/doctor.sh` | Sanity checks: VM running, SSH works, ports forwarded |
 | `./scripts/delete.sh` | Permanently delete the VM (typed confirmation) |
-
-If `ssh dev-vm` reports "Connection refused" after `start.sh`, Lima has picked a new local SSH port — re-run `./scripts/ssh-config-install.sh` (or see [Troubleshooting](#troubleshooting) for a one-line fix that avoids this).
 
 ## Customizing VM size
 
@@ -112,7 +109,7 @@ Important if you're running AI agents inside. Audit before trusting the VM with 
 | Surface | What it is | How to tighten |
 |---|---|---|
 | `~/dev-vm-shared/` | Single directory mounted into the VM at the guest user's `~/dev-vm-shared` (so home-relative paths match on host and guest). Distinct from `~/.lima/dev-vm/`, which is Lima's internal storage for the VM. | Don't put secrets in there. |
-| Lima's auto-generated SSH pubkey (`~/.lima/_config/user.pub`) | Authorizes inbound SSH from your Mac into the VM. The matching private key lives on your Mac only. | n/a — required for `ssh dev-vm` to work. |
+| Lima's auto-generated SSH pubkey (`~/.lima/_config/user.pub`) | Authorizes inbound SSH from your Mac into the VM. The matching private key lives on your Mac only. | n/a — required for `ssh lima-dev-vm` to work. |
 | Outbound internet | Full, unrestricted via NAT. | Add `iptables`/`nftables` rules in `scripts/dev-setup.sh` to allowlist domains/IPs. |
 | **Mac reachable as `host.lima.internal`** | The VM can connect *back* to any service running on your Mac (localhost-bound dev servers, databases, MCP servers, Ollama, etc.). | See "Blocking host access" below. |
 | User account | Lima creates a Linux user matching your Mac username with passwordless `sudo`. Compromise inside the VM = root inside the VM (does not escape). | Tighten via `/etc/sudoers.d/` in `dev-setup.sh` if needed. |
@@ -158,7 +155,7 @@ The wrapper scripts cover the common cases. For everything else, `limactl` is wh
 | `limactl list` | All VMs and their state (add `--json` for scripting). |
 | `limactl shell dev-vm -- <cmd>` | Run a one-off command inside the VM without an interactive shell. |
 | `limactl copy <src> <dst>` | `scp`-style copy, e.g. `limactl copy ./file dev-vm:/tmp/`. |
-| `limactl show-ssh dev-vm` | Print the SSH config block Lima would use — useful when debugging `ssh-config-install.sh`. |
+| `limactl show-ssh dev-vm` | Print the SSH config block Lima would use — useful when inspecting the live per-instance config. |
 | `limactl edit dev-vm` | Edit the live VM's `lima.yaml`. Apply with `stop` + `start`. |
 | `limactl restart dev-vm` | Stop + start in one step. |
 | `limactl tunnel dev-vm --tcp <host:port>` | Ad-hoc port forward without editing `dev-vm.yaml`. |
@@ -175,13 +172,9 @@ The wrapper scripts cover the common cases. For everything else, `limactl` is wh
 
 **`create.sh` hangs on first boot**: cloud image download (~600 MB) and cloud-init can take 5-10 minutes the first time. Watch progress in another terminal with `limactl shell dev-vm -- sudo journalctl -fu cloud-final` or `tail -f ~/.lima/dev-vm/serial*.log`.
 
-**Port 3000/8088 not reachable from Mac**: verify the VM is running (`./scripts/status.sh`) and that the service inside the VM is actually listening (`ssh dev-vm 'ss -ltn'`). `./scripts/doctor.sh` runs an end-to-end check.
+**Port 3000/8088 not reachable from Mac**: verify the VM is running (`./scripts/status.sh`) and that the service inside the VM is actually listening (`ssh lima-dev-vm 'ss -ltn'`). `./scripts/doctor.sh` runs an end-to-end check.
 
-**SSH says "Connection refused" or wrong port**: re-run `./scripts/ssh-config-install.sh`. Lima sometimes picks a new local SSH port between VM restarts, and that script refreshes the managed block in `~/.ssh/config`. To avoid having to re-run it, replace the managed block with a single line that includes Lima's own (always up-to-date) config:
-
-```sshconfig
-Include ~/.lima/dev-vm/ssh.config
-```
+**`ssh lima-dev-vm` says host not found**: re-run `./scripts/ssh-config-install.sh` to (re-)add `Include ~/.lima/*/ssh.config` to `~/.ssh/config`. Lima rewrites `~/.lima/dev-vm/ssh.config` with the live forwarded port on every VM start, so the Include line never goes stale.
 
 **VM is wedged / won't start**: `./scripts/delete.sh && ./scripts/create.sh`. The dev environment is reproducible from `dev-vm.yaml` + `dev-setup.sh`, so rebuilds are cheap.
 
