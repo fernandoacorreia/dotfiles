@@ -369,11 +369,11 @@ if vm_running; then
     else
         printf "  FAIL  cpus=%s (expected 4)\n" "${cpus}"; fail=1; fail_count=$((fail_count + 1))
     fi
-    # Lima may report memory/disk in bytes; accept either '8GiB' or matching byte counts.
-    if [ "${mem}" = "8GiB" ] || [ "${mem}" = "8589934592" ]; then
-        printf "  PASS  memory=8GiB\n"; pass_count=$((pass_count + 1))
+    # Lima may report memory/disk in bytes; accept either '16GiB' or matching byte counts.
+    if [ "${mem}" = "16GiB" ] || [ "${mem}" = "17179869184" ]; then
+        printf "  PASS  memory=16GiB\n"; pass_count=$((pass_count + 1))
     else
-        printf "  FAIL  memory=%s (expected 8GiB)\n" "${mem}"; fail=1; fail_count=$((fail_count + 1))
+        printf "  FAIL  memory=%s (expected 16GiB)\n" "${mem}"; fail=1; fail_count=$((fail_count + 1))
     fi
     if [ "${dsk}" = "80GiB" ] || [ "${dsk}" = "85899345920" ]; then
         printf "  PASS  disk=80GiB\n"; pass_count=$((pass_count + 1))

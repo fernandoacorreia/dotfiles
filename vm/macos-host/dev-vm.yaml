@@ -23,7 +23,7 @@ images:
     arch: "aarch64"
 
 cpus: 4
-memory: "8GiB"
+memory: "16GiB"
 disk: "80GiB"
 
 # Override Lima 2.x default of /home/<user>.guest so the guest home matches
