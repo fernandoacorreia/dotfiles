@@ -70,6 +70,12 @@
     dest: "{{ home_dir }}/.p10k.zsh"
     state: link
 
+- name: Install iTerm2 zsh shell integration
+  get_url:
+    url: "https://iterm2.com/shell_integration/zsh"
+    dest: "{{ home_dir }}/.iterm2_shell_integration.zsh"
+    mode: '0644'
+
 - name: Ensure ~/.config/direnv directory exists
   file:
     path: "{{ home_dir }}/.config/direnv"

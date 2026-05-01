@@ -102,6 +102,26 @@ else
 fi
 
 echo
+echo "Checking iTerm2 shell integration inside VM..."
+# iTerm2's integration script sets ITERM_SHELL_INTEGRATION_INSTALLED=Yes when
+# sourced. Run an interactive zsh so ~/.zshrc gets sourced, and verify the
+# variable is set. The ansible `shell` role downloads the integration script
+# and ~/.zshrc sources it when present.
+test_iterm_integration() {
+    local val
+    # Force TERM=xterm-256color: limactl shell runs without a tty, so TERM
+    # would otherwise be 'dumb' and the iTerm2 script self-skips. Strip the
+    # OSC 1337 escape sequences the script emits when it loads.
+    val="$(limactl shell "${VM_NAME}" -- bash -c 'TERM=xterm-256color zsh -ic '"'"'printf %s "${ITERM_SHELL_INTEGRATION_INSTALLED:-}"'"'"'' 2>/dev/null | tr -d '\r' | sed $'s/\x1b\\][^\x07]*\x07//g')"
+    [ "${val##*$'\x07'}" = "Yes" ] || [ "${val}" = "Yes" ]
+}
+if [ "$(limactl list --format='{{.Status}}' "${VM_NAME}" 2>/dev/null)" = "Running" ]; then
+    check "ITERM_SHELL_INTEGRATION_INSTALLED set in interactive shell" test_iterm_integration
+else
+    echo "  SKIP  iTerm2 shell integration (VM not running)"
+fi
+
+echo
 if [ "${fail}" -eq 0 ]; then
     echo "All checks passed."
 else
