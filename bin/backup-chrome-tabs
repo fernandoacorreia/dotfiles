@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# backup-chrome-tabs.sh — Save all open Google Chrome tabs as a Markdown file.
+# Queries every Chrome window/tab via AppleScript and writes a timestamped
+# backup to ~/.local/state/chrome-tabs-backups/chrome_tabs_<timestamp>.md
+
+# Define output file with timestamp and .md extension
+BACKUP_DIR="${HOME}/.local/state/chrome-tabs-backups"
+mkdir -p "$BACKUP_DIR"
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M)
+OUTPUT_FILE="${BACKUP_DIR}/chrome_tabs_${TIMESTAMP}.md"
+
+# Use osascript to query Chrome and format as Markdown
+osascript <<EOT > "$OUTPUT_FILE"
+set tabList to "# Chrome Tabs Backup" & linefeed & "Generated: " & (current date as string) & linefeed & linefeed
+tell application "Google Chrome"
+    set windowList to every window
+    repeat with aWindow in windowList
+        set tabList to tabList & "## Window " & (id of aWindow) & linefeed
+        repeat with aTab in tabs of aWindow
+            set tTitle to title of aTab
+            set tURL to URL of aTab
+            -- Format as a Markdown list item with a link
+            set tabList to tabList & "- [" & tTitle & "](" & tURL & ")" & linefeed
+        end repeat
+        set tabList to tabList & linefeed
+    end repeat
+end tell
+return tabList
+EOT
+
+echo "Markdown backup saved to $OUTPUT_FILE"
