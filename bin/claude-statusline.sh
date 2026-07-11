@@ -14,16 +14,30 @@ fi
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // empty' 2>/dev/null)
 dir_name=$(basename "$cwd" 2>/dev/null || echo "?")
 
-# Extract model - could be string or object with .id field
+# Extract model - could be string or object with .display_name/.id field
 model=$(echo "$input" | jq -r '
-  if .model | type == "object" then .model.id // .model.name // "claude"
+  if .model | type == "object" then .model.display_name // .model.id // .model.name // "claude"
   elif .model | type == "string" then .model
   else "claude"
   end
 ' 2>/dev/null)
 [ -z "$model" ] || [ "$model" = "null" ] && model="claude"
+
+# Bedrock ARNs aren't human-readable - map back to a friendly name using the
+# same ANTHROPIC_DEFAULT_*_MODEL / *_MODEL_NAME env vars Claude Code itself reads
+if [[ "$model" == arn:aws:bedrock:* ]]; then
+    for prefix in OPUS SONNET HAIKU; do
+        arn_var="ANTHROPIC_DEFAULT_${prefix}_MODEL"
+        name_var="ANTHROPIC_DEFAULT_${prefix}_MODEL_NAME"
+        if [ "$model" = "${!arn_var}" ] && [ -n "${!name_var}" ]; then
+            model="${!name_var}"
+            break
+        fi
+    done
+fi
+
 # Clean up model name - remove claude- prefix and date suffix, truncate
-model=$(echo "$model" | sed 's/claude-//' | sed 's/-[0-9]*$//' | cut -c1-10)
+model=$(echo "$model" | sed 's/^[Cc]laude[ -]*//' | sed 's/-[0-9]*$//' | cut -c1-10)
 
 # Set model background color based on model name
 shopt -s nocasematch
