@@ -1,0 +1,5 @@
+---
+- name: Install coreutils from Homebrew
+  community.general.homebrew:
+    name: coreutils
+    state: present
