@@ -11,30 +11,16 @@ listing each container as "<name>:<image-tag>:<status>" (tag defaults to
 An optional bare (non-flag) argument filters the output to pods whose name
 starts with it, e.g. `podstatus data-service`.
 
-Any flags are passed straight through to `kubectl get pods`, so
-`podstatus -n foo` or `podstatus -A` work as expected, and can be combined
-with the name filter (`podstatus -n foo api`). When the output isn't the
-default table (e.g. `-o json`/`-o yaml`), it's shown unchanged.
+A `-n`/`--namespace` flag is passed through to `kubectl get pods` and can be
+combined with the name filter (`podstatus -n foo api`).
 """
 import json
 import subprocess
 import sys
 
-# kubectl flags that consume a following token as their value, so we don't
+# The namespace flag consumes a following token as its value, so we don't
 # mistake that value for the name-prefix filter (e.g. the "foo" in "-n foo").
-VALUE_FLAGS = {
-    "-n", "--namespace",
-    "-l", "--selector",
-    "-o", "--output",
-    "-L", "--label-columns",
-    "--field-selector",
-    "--context",
-    "--cluster",
-    "--server",
-    "--sort-by",
-    "--template",
-    "--chunk-size",
-}
+VALUE_FLAGS = {"-n", "--namespace"}
 
 
 def split_args(argv):
@@ -48,7 +34,7 @@ def split_args(argv):
             expect_value = False
         elif arg.startswith("-"):
             flags.append(arg)
-            # "--flag=value" is self-contained; "--flag value" needs the next token.
+            # "--namespace=foo" is self-contained; "--namespace foo" needs the next token.
             if arg in VALUE_FLAGS and "=" not in arg:
                 expect_value = True
         elif name_filter is None:
