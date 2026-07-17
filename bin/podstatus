@@ -8,13 +8,55 @@ Shows pod status, same as `kubectl get pods`, plus a CONTAINERS column
 listing each container as "<name>:<image-tag>:<status>" (tag defaults to
 "latest" when the image has no explicit tag).
 
-Any extra arguments are passed straight through to `kubectl get pods`,
-so `podstatus -n foo` or `podstatus -A` work as expected. When the output
-isn't the default table (e.g. `-o json`/`-o yaml`), it's shown unchanged.
+An optional bare (non-flag) argument filters the output to pods whose name
+starts with it, e.g. `podstatus data-service`.
+
+Any flags are passed straight through to `kubectl get pods`, so
+`podstatus -n foo` or `podstatus -A` work as expected, and can be combined
+with the name filter (`podstatus -n foo api`). When the output isn't the
+default table (e.g. `-o json`/`-o yaml`), it's shown unchanged.
 """
 import json
 import subprocess
 import sys
+
+# kubectl flags that consume a following token as their value, so we don't
+# mistake that value for the name-prefix filter (e.g. the "foo" in "-n foo").
+VALUE_FLAGS = {
+    "-n", "--namespace",
+    "-l", "--selector",
+    "-o", "--output",
+    "-L", "--label-columns",
+    "--field-selector",
+    "--context",
+    "--cluster",
+    "--server",
+    "--sort-by",
+    "--template",
+    "--chunk-size",
+}
+
+
+def split_args(argv):
+    """Split argv into (kubectl flags, name-prefix filter or None)."""
+    flags = []
+    name_filter = None
+    expect_value = False
+    for arg in argv:
+        if expect_value:
+            flags.append(arg)
+            expect_value = False
+        elif arg.startswith("-"):
+            flags.append(arg)
+            # "--flag=value" is self-contained; "--flag value" needs the next token.
+            if arg in VALUE_FLAGS and "=" not in arg:
+                expect_value = True
+        elif name_filter is None:
+            name_filter = arg
+        else:
+            # Extra positionals aren't meaningful here; pass through to kubectl.
+            flags.append(arg)
+    return flags, name_filter
 
 
 def image_tag(image):
@@ -50,7 +92,7 @@ def container_summary(pod):
 
 
 def main():
-    args = sys.argv[1:]
+    args, name_filter = split_args(sys.argv[1:])
 
     table = subprocess.run(
         ["kubectl", "get", "pods", *args], capture_output=True, text=True
@@ -85,9 +127,13 @@ def main():
             key = (ns, name) if ns_idx is not None else name
             summaries[key] = container_summary(pod)
 
-        width = max(len(line) for line in lines)
+        rows = lines[1:]
+        if name_filter is not None:
+            rows = [r for r in rows if r.split()[name_idx].startswith(name_filter)]
+
+        width = max(len(line) for line in [lines[0], *rows])
         out = [lines[0].ljust(width) + "   CONTAINERS"]
-        for line in lines[1:]:
+        for line in rows:
             fields = line.split()
             if ns_idx is not None:
                 key = (fields[ns_idx], fields[name_idx])
