@@ -7,11 +7,6 @@ fi
 
 DEFAULT_USER=$(whoami)
 
-# zsh vi mode
-# https://dougblack.io/words/zsh-vi-mode.html
-bindkey -v
-export KEYTIMEOUT=1
-
 source $HOME/dotfiles/vendor/antigen/antigen.zsh
 antigen use oh-my-zsh
 
@@ -23,6 +18,11 @@ antigen bundle zsh-users/zsh-autosuggestions
 antigen theme romkatv/powerlevel10k # https://github.com/romkatv/powerlevel10k#antigen
 
 antigen apply
+
+# zsh vi mode
+# https://dougblack.io/words/zsh-vi-mode.html
+bindkey -v
+export KEYTIMEOUT=1
 
 # kubectl completion
 if test -f kubectl; then
