@@ -1,0 +1,103 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.9"
+# dependencies = []
+# ///
+"""
+Shows pod status, same as `kubectl get pods`, plus a CONTAINERS column
+listing each container as "<name>:<image-tag>:<status>" (tag defaults to
+"latest" when the image has no explicit tag).
+
+Any extra arguments are passed straight through to `kubectl get pods`,
+so `podstatus -n foo` or `podstatus -A` work as expected. When the output
+isn't the default table (e.g. `-o json`/`-o yaml`), it's shown unchanged.
+"""
+import json
+import subprocess
+import sys
+
+
+def image_tag(image):
+    """Return the tag portion of a container image, or "latest" if none."""
+    # Drop any digest suffix, e.g. repo:tag@sha256:...
+    ref = image.split("@", 1)[0]
+    # The tag lives in the final path segment, after the last ":".
+    last = ref.rsplit("/", 1)[-1]
+    if ":" in last:
+        return last.rsplit(":", 1)[1]
+    return "latest"
+
+
+def container_summary(pod):
+    """Build the "name:status:tag, ..." string for a pod's containers."""
+    statuses = {c["name"]: c for c in (pod["status"].get("containerStatuses") or [])}
+    parts = []
+    for spec in pod["spec"].get("containers", []):
+        name = spec["name"]
+        cs = statuses.get(name)
+        image = (cs or {}).get("image") or spec.get("image", "")
+        state = (cs or {}).get("state") or {}
+        if "running" in state:
+            status = "Running"
+        elif "waiting" in state:
+            status = state["waiting"].get("reason") or "Waiting"
+        elif "terminated" in state:
+            status = state["terminated"].get("reason") or "Terminated"
+        else:
+            status = "Unknown"
+        parts.append(f"{name}:{image_tag(image)}:{status}")
+    return ", ".join(parts)
+
+
+def main():
+    args = sys.argv[1:]
+
+    table = subprocess.run(
+        ["kubectl", "get", "pods", *args], capture_output=True, text=True
+    )
+    if table.returncode != 0:
+        sys.stderr.write(table.stderr)
+        sys.exit(table.returncode)
+
+    lines = table.stdout.splitlines()
+
+    # Fetch container details and merge them in. Anything unexpected (non-table
+    # output, missing NAME column, JSON errors) falls back to the plain table.
+    try:
+        result = subprocess.run(
+            ["kubectl", "get", "pods", *args, "-o", "json"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        data = json.loads(result.stdout)
+
+        header = lines[0].split()
+        name_idx = header.index("NAME")
+        ns_idx = header.index("NAMESPACE") if "NAMESPACE" in header else None
+
+        # Key on (namespace, name) when the table shows namespaces, else on
+        # name alone so lookups match regardless of the pod's real namespace.
+        summaries = {}
+        for pod in data.get("items", []):
+            name = pod["metadata"]["name"]
+            ns = pod["metadata"].get("namespace")
+            key = (ns, name) if ns_idx is not None else name
+            summaries[key] = container_summary(pod)
+
+        width = max(len(line) for line in lines)
+        out = [lines[0].ljust(width) + "   CONTAINERS"]
+        for line in lines[1:]:
+            fields = line.split()
+            if ns_idx is not None:
+                key = (fields[ns_idx], fields[name_idx])
+            else:
+                key = fields[name_idx]
+            out.append(line.ljust(width) + "   " + summaries.get(key, ""))
+        print("\n".join(out))
+    except (subprocess.CalledProcessError, json.JSONDecodeError, ValueError, IndexError):
+        sys.stdout.write(table.stdout)
+
+
+if __name__ == "__main__":
+    main()
