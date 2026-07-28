@@ -5,6 +5,7 @@
     state: present
   with_items:
     - awscli
+    - d2
     - direnv
     - fnm
     - git-filter-repo
