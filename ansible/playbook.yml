@@ -42,6 +42,7 @@
     - libpq
     - mcfly
     - neovim
+    - pandoc
     - shell
     - stern
     - tig

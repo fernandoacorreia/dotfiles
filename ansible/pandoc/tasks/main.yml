@@ -1,0 +1,15 @@
+---
+# tectonic is a self-contained TeX engine that downloads LaTeX packages on
+# demand and caches them, so there is no LaTeX package list to maintain.
+#
+# Limitation: tectonic ignores TEXINPUTS, so local custom .sty/.cls files are
+# not found, and some exotic fonts hit open upstream bugs. If either comes up,
+# install a full engine (macOS: brew install --cask basictex; Linux: apt
+# texlive-xetex) and use pandoc --pdf-engine=xelatex instead.
+- name: Install pandoc and tectonic
+  community.general.homebrew:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - pandoc
+    - tectonic
