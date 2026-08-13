@@ -1,0 +1,58 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["pyarrow"]
+# ///
+"""
+Converts a Parquet file to pretty-printed JSON on stdout.
+
+Reads the file named by the first argument, or from stdin when no argument is
+given (or the argument is "-"), e.g.
+
+    parquet2json data.parquet
+    cat data.parquet | parquet2json
+"""
+import io
+import json
+import sys
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
+
+import pyarrow.parquet as pq
+
+
+def encode(value):
+    """Render values that json.dumps can't handle natively."""
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    if isinstance(value, timedelta):
+        return str(value)
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return bytes(value).hex()
+    raise TypeError(f"cannot serialize {type(value).__name__}")
+
+
+def main():
+    args = sys.argv[1:]
+    if len(args) > 1:
+        sys.exit("usage: parquet2json [FILE]")
+
+    if not args or args[0] == "-":
+        # pyarrow needs a seekable source, which a pipe isn't.
+        source = io.BytesIO(sys.stdin.buffer.read())
+    else:
+        source = args[0]
+
+    try:
+        table = pq.read_table(source)
+    except Exception as e:
+        sys.exit(f"parquet2json: {e}")
+
+    json.dump(table.to_pylist(), sys.stdout, indent=2, default=encode)
+    sys.stdout.write("\n")
+
+
+if __name__ == "__main__":
+    main()
