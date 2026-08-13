@@ -4,12 +4,12 @@
 # dependencies = ["pyarrow"]
 # ///
 """
-Converts a Parquet file to pretty-printed JSON on stdout.
+Converts a Parquet file to pretty-printed JSON.
 
-Reads the file named by the first argument, or from stdin when no argument is
-given (or the argument is "-"), e.g.
+Given a file name, writes a sibling .json file and prints its path. Reading
+from stdin (no argument, or "-") writes the JSON to stdout instead.
 
-    parquet2json data.parquet
+    parquet2json data.parquet     # writes data.json
     cat data.parquet | parquet2json
 """
 import io
@@ -17,6 +17,7 @@ import json
 import sys
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from pathlib import Path
 
 import pyarrow.parquet as pq
 
@@ -42,16 +43,27 @@ def main():
     if not args or args[0] == "-":
         # pyarrow needs a seekable source, which a pipe isn't.
         source = io.BytesIO(sys.stdin.buffer.read())
+        destination = None
     else:
-        source = args[0]
+        source = Path(args[0])
+        destination = source.with_suffix(".json")
+        if destination == source:
+            sys.exit(f"parquet2json: {source} is already a .json file")
 
     try:
         table = pq.read_table(source)
     except Exception as e:
         sys.exit(f"parquet2json: {e}")
 
-    json.dump(table.to_pylist(), sys.stdout, indent=2, default=encode)
-    sys.stdout.write("\n")
+    records = table.to_pylist()
+    if destination is None:
+        json.dump(records, sys.stdout, indent=2, default=encode)
+        sys.stdout.write("\n")
+    else:
+        with destination.open("w") as f:
+            json.dump(records, f, indent=2, default=encode)
+            f.write("\n")
+        print(destination)
 
 
 if __name__ == "__main__":
