@@ -1,0 +1,225 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["markdown-it-py", "mdit-py-plugins", "pygments"]
+# ///
+"""
+Converts a Markdown file to a self-contained HTML page.
+
+The output embeds its own stylesheet and base64-inlines local images, so the
+single .html file renders identically anywhere with no network access.
+
+    md-to-html notes.md            # writes notes.html
+    md-to-html notes.md out.html
+"""
+import base64
+import html
+import mimetypes
+import re
+import sys
+from pathlib import Path
+
+from markdown_it import MarkdownIt
+from mdit_py_plugins.footnote import footnote_plugin
+from mdit_py_plugins.front_matter import front_matter_plugin
+from mdit_py_plugins.tasklists import tasklists_plugin
+from pygments import highlight as pygments_highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_by_name
+from pygments.util import ClassNotFound
+
+STYLE = """
+:root {
+  color-scheme: light;
+  --text: #1f2328;
+  --muted: #59636e;
+  --link: #0969da;
+  --rule: #d1d9e0;
+  --tint: #f6f8fa;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--text);
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+article {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 2rem 0 1rem;
+  line-height: 1.25;
+  font-weight: 600;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1rem; }
+h5 { font-size: .875rem; }
+h6 { font-size: .875rem; color: var(--muted); }
+h1, h2 {
+  padding-bottom: .3rem;
+  border-bottom: 1px solid var(--rule);
+}
+:is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
+p, ul, ol, blockquote, pre, table, hr { margin: 0 0 1rem; }
+ul, ol { padding-left: 1.75rem; }
+li + li { margin-top: .25rem; }
+li > :is(ul, ol) { margin: .25rem 0 0; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr { border: 0; border-top: 1px solid var(--rule); }
+strong { font-weight: 600; }
+blockquote {
+  padding: 0 1rem;
+  color: var(--muted);
+  border-left: .25rem solid var(--rule);
+}
+blockquote > :last-child { margin-bottom: 0; }
+code, kbd, samp {
+  font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: .875em;
+}
+:not(pre) > code {
+  padding: .2em .4em;
+  background: var(--tint);
+  border-radius: 6px;
+}
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--tint);
+  border-radius: 6px;
+  line-height: 1.45;
+}
+pre code { font-size: .8125rem; }
+table {
+  border-collapse: collapse;
+  display: block;
+  width: max-content;
+  overflow-x: auto;
+  /* Wide tables break out of the prose column and center on the viewport. */
+  max-width: calc(100vw - 3rem);
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+th, td {
+  padding: .375rem .75rem;
+  border: 1px solid var(--rule);
+}
+th { font-weight: 600; background: var(--tint); }
+tbody tr:nth-child(even) { background: var(--tint); }
+img { max-width: 100%; }
+ul.contains-task-list { list-style: none; padding-left: 1.25rem; }
+.task-list-item-checkbox { margin: 0 .4em 0 -1.25em; }
+.footnotes {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: .875rem;
+  color: var(--muted);
+}
+.footnotes-sep { display: none; }
+@media (max-width: 600px) {
+  article { padding: 1.5rem 1rem 4rem; }
+  h1 { font-size: 1.625rem; }
+}
+"""
+
+PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<style>{style}</style>
+</head>
+<body>
+<article>
+{body}</article>
+</body>
+</html>
+"""
+
+
+def highlight(code, language, _attrs):
+    """Render a fenced code block, colorized when the language is known."""
+    try:
+        lexer = get_lexer_by_name(language)
+    except ClassNotFound:
+        return f"<pre><code>{html.escape(code)}</code></pre>"
+    marked = pygments_highlight(code, lexer, HtmlFormatter(nowrap=True))
+    return f'<pre><code class="sourceCode">{marked}</code></pre>'
+
+
+def inline_images(body, base):
+    """Replace references to local image files with data URIs."""
+
+    def replace(match):
+        src = html.unescape(match.group(1))
+        if re.match(r"(?:[a-z][a-z0-9+.-]*:|//)", src, re.IGNORECASE):
+            return match.group(0)
+        path = base / src
+        try:
+            data = path.read_bytes()
+        except OSError as e:
+            sys.exit(f"md-to-html: {e}")
+        mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        encoded = base64.b64encode(data).decode()
+        return f'src="data:{mime};base64,{encoded}"'
+
+    return re.sub(r'src="([^"]*)"', replace, body)
+
+
+def page_title(text, fallback):
+    match = re.search(r"^#\s+(.+?)\s*#*$", text, re.MULTILINE)
+    return match.group(1) if match else fallback
+
+
+def main():
+    args = sys.argv[1:]
+    if args and args[0] in ("-h", "--help"):
+        print(__doc__.strip())
+        return
+    if not args or len(args) > 2:
+        sys.exit("usage: md-to-html input.md [output.html]")
+
+    source = Path(args[0])
+    destination = Path(args[1]) if len(args) == 2 else source.with_suffix(".html")
+    if destination == source:
+        sys.exit(f"md-to-html: {source} is already an .html file")
+
+    try:
+        text = source.read_text()
+    except OSError as e:
+        sys.exit(f"md-to-html: {e}")
+
+    md = (
+        MarkdownIt("commonmark", {"html": True, "highlight": highlight})
+        .enable(["table", "strikethrough"])
+        .use(front_matter_plugin)
+        .use(footnote_plugin)
+        .use(tasklists_plugin)
+    )
+    body = inline_images(md.render(text), source.parent)
+    style = STYLE + HtmlFormatter(style="tango").get_style_defs(".sourceCode")
+
+    destination.write_text(
+        PAGE.format(
+            title=html.escape(page_title(text, source.stem)),
+            style=style,
+            body=body,
+        )
+    )
+    print(destination)
+
+
+if __name__ == "__main__":
+    main()
