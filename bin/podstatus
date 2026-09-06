@@ -4,7 +4,8 @@
 # dependencies = []
 # ///
 """
-Shows pod status, same as `kubectl get pods`, plus a CONTAINERS column
+Prints the active cluster and default namespace, then pod status, same as
+`kubectl get pods`, plus a CONTAINERS column
 listing each container as "<name>:<image-tag>:<status>" (tag defaults to
 "latest" when the image has no explicit tag).
 
@@ -77,8 +78,30 @@ def container_summary(pod):
     return ", ".join(parts)
 
 
+def print_context():
+    """Print the active cluster and its default namespace, if resolvable."""
+    result = subprocess.run(
+        [
+            "kubectl",
+            "config",
+            "view",
+            "--minify",
+            "-o",
+            'jsonpath={.contexts[0].context.cluster}{"\\t"}{.contexts[0].context.namespace}',
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return
+    cluster, _, namespace = result.stdout.strip().partition("\t")
+    print(f"Cluster: {cluster}    Namespace: {namespace or 'default'}\n")
+
+
 def main():
     args, name_filter = split_args(sys.argv[1:])
+
+    print_context()
 
     table = subprocess.run(
         ["kubectl", "get", "pods", *args], capture_output=True, text=True
