@@ -10,11 +10,15 @@ Aggregates results from several general-purpose search engines, then fetches the
 top results and extracts the readable body text of each one, so the answer is
 usually on screen without opening a browser.
 
-usage: websearch QUERY [-n COUNT] [--chars N] [--backends LIST] [--json]
+usage: websearch QUERY [-n COUNT] [--chars N] [--timeout SECONDS]
+                      [--backends LIST] [--json]
 
     -n, --count COUNT   Results to fetch. Default 10.
     --chars N           Truncate each excerpt to N characters, cutting on a word
                         boundary. Use 0 for whole pages. Default 1500.
+    --timeout SECONDS   How long to wait for each page. A page that runs over is
+                        reported as "(snippet only)", so raise this when slow
+                        sites matter more than a prompt answer. Default 10.
     --backends LIST     Comma-separated engines to query, one or more of brave,
                         google, duckduckgo, yahoo, wikipedia, grokipedia. Also
                         accepts "auto" for every engine ddgs knows, which ranks
@@ -46,11 +50,11 @@ from trafilatura.settings import use_config
 WIDTH = 88
 
 # trafilatura waits 30s per page by default, long enough for one hung site to stall
-# a whole run. A page slower than this is not worth the wait; we show its snippet.
-FETCH_CONFIG = use_config()
-FETCH_CONFIG["DEFAULT"]["DOWNLOAD_TIMEOUT"] = "10"
+# a whole run.
+TIMEOUT = 10
 
-USAGE = "usage: websearch QUERY [-n COUNT] [--chars N] [--backends LIST] [--json]"
+USAGE = ("usage: websearch QUERY [-n COUNT] [--chars N] [--timeout SECONDS]"
+         " [--backends LIST] [--json]")
 
 # Named explicitly rather than using "auto", which front-loads the Wikipedia and
 # Grokipedia engines by priority and floods the results with encyclopedia pages.
@@ -63,6 +67,7 @@ def parse_args(argv):
     query = None
     count = 10
     chars = 1500
+    timeout = TIMEOUT
     backends = BACKENDS
     as_json = False
 
@@ -87,6 +92,8 @@ def parse_args(argv):
             count = number(arg, rest)
         elif arg == "--chars":
             chars = number(arg, rest)
+        elif arg == "--timeout":
+            timeout = number(arg, rest)
         elif arg == "--backends":
             backends = value(arg, rest)
         elif arg == "--json":
@@ -102,7 +109,9 @@ def parse_args(argv):
         sys.exit(USAGE)
     if count < 1:
         sys.exit("websearch: -n must be at least 1")
-    return query, count, chars, check_backends(backends), as_json
+    if timeout < 1:
+        sys.exit("websearch: --timeout must be at least 1")
+    return query, count, chars, timeout, check_backends(backends), as_json
 
 
 def check_backends(backends):
@@ -151,10 +160,10 @@ def trim(text, limit):
     return (cut[:space] if space > limit // 2 else cut).rstrip() + "…"
 
 
-def excerpt(url, limit):
+def excerpt(url, limit, config):
     """Return the page's readable text, or None if it can't be retrieved."""
     try:
-        html = trafilatura.fetch_url(url, config=FETCH_CONFIG)
+        html = trafilatura.fetch_url(url, config=config)
         text = trafilatura.extract(html, include_comments=False, include_tables=False)
     except Exception:
         return None
@@ -176,11 +185,15 @@ def render(results, excerpts):
 
 
 def main():
-    query, count, chars, backends, as_json = parse_args(sys.argv[1:])
+    query, count, chars, timeout, backends, as_json = parse_args(sys.argv[1:])
     results = search(query, count, backends)
 
+    config = use_config()
+    config["DEFAULT"]["DOWNLOAD_TIMEOUT"] = str(timeout)
     with concurrent.futures.ThreadPoolExecutor(min(len(results), 10)) as pool:
-        excerpts = list(pool.map(lambda r: excerpt(r.get("href", ""), chars), results))
+        excerpts = list(
+            pool.map(lambda r: excerpt(r.get("href", ""), chars, config), results)
+        )
 
     if as_json:
         json.dump(
