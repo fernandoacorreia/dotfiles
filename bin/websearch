@@ -53,6 +53,12 @@ WIDTH = 88
 # a whole run.
 TIMEOUT = 10
 
+# Sites that answer 403 to trafilatura's own agent often serve a browser fine, so
+# claim to be one. Setting this also drops trafilatura's Accept-Encoding header,
+# because it replaces the whole header dict once any agent is configured.
+USER_AGENT = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+              " (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
 USAGE = ("usage: websearch QUERY [-n COUNT] [--chars N] [--timeout SECONDS]"
          " [--backends LIST] [--json]")
 
@@ -190,6 +196,7 @@ def main():
 
     config = use_config()
     config["DEFAULT"]["DOWNLOAD_TIMEOUT"] = str(timeout)
+    config["DEFAULT"]["USER_AGENTS"] = USER_AGENT
     with concurrent.futures.ThreadPoolExecutor(min(len(results), 10)) as pool:
         excerpts = list(
             pool.map(lambda r: excerpt(r.get("href", ""), chars, config), results)
