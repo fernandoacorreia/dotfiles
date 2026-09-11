@@ -1,0 +1,210 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["ddgs", "trafilatura"]
+# ///
+"""
+Searches the web and prints an excerpt of each result page.
+
+Aggregates results from several general-purpose search engines, then fetches the
+top results and extracts the readable body text of each one, so the answer is
+usually on screen without opening a browser.
+
+usage: websearch QUERY [-n COUNT] [--chars N] [--backends LIST] [--json]
+
+    -n, --count COUNT   Results to fetch. Default 10.
+    --chars N           Truncate each excerpt to N characters, cutting on a word
+                        boundary. Use 0 for whole pages. Default 1500.
+    --backends LIST     Comma-separated engines to query, one or more of brave,
+                        google, duckduckgo, yahoo, wikipedia, grokipedia. Also
+                        accepts "auto" for every engine ddgs knows, which ranks
+                        the two encyclopedia engines above the rest.
+                        Default brave,google,duckduckgo,yahoo.
+    --json              Emit a JSON list of {title, url, excerpt, extracted}
+                        instead of formatted text. "extracted" is false when the
+                        excerpt is a search snippet rather than the page body.
+    -h, --help          Show this help.
+
+examples:
+
+    websearch "ddgs metasearch library"
+    websearch "python packaging" -n 3
+    websearch "trafilatura" --chars 0        # whole pages, no truncation
+    websearch "lisbon" --backends wikipedia  # encyclopedias only
+    websearch "uv script shebang" --json | jq -r '.[].url'
+"""
+import concurrent.futures
+import json
+import sys
+import textwrap
+
+import trafilatura
+from ddgs import DDGS
+from ddgs.engines import ENGINES
+from trafilatura.settings import use_config
+
+WIDTH = 88
+
+# trafilatura waits 30s per page by default, long enough for one hung site to stall
+# a whole run. A page slower than this is not worth the wait; we show its snippet.
+FETCH_CONFIG = use_config()
+FETCH_CONFIG["DEFAULT"]["DOWNLOAD_TIMEOUT"] = "10"
+
+USAGE = "usage: websearch QUERY [-n COUNT] [--chars N] [--backends LIST] [--json]"
+
+# Named explicitly rather than using "auto", which front-loads the Wikipedia and
+# Grokipedia engines by priority and floods the results with encyclopedia pages.
+# Startpage and Mojeek are left out too: both answer 200 with an unparseable page
+# and yield nothing, so they only add latency.
+BACKENDS = "brave,google,duckduckgo,yahoo"
+
+
+def parse_args(argv):
+    query = None
+    count = 10
+    chars = 1500
+    backends = BACKENDS
+    as_json = False
+
+    def value(flag, rest):
+        if not rest:
+            sys.exit(f"websearch: {flag} needs a value")
+        return rest.pop(0)
+
+    def number(flag, rest):
+        text = value(flag, rest)
+        if not text.isdigit():
+            sys.exit(f"websearch: {flag} needs a non-negative integer, got {text!r}")
+        return int(text)
+
+    rest = list(argv)
+    while rest:
+        arg = rest.pop(0)
+        if arg in ("-h", "--help"):
+            print(__doc__.strip())
+            sys.exit(0)
+        elif arg in ("-n", "--count"):
+            count = number(arg, rest)
+        elif arg == "--chars":
+            chars = number(arg, rest)
+        elif arg == "--backends":
+            backends = value(arg, rest)
+        elif arg == "--json":
+            as_json = True
+        elif arg.startswith("-") and arg != "-":
+            sys.exit(f"websearch: unknown option {arg}")
+        elif query is None:
+            query = arg
+        else:
+            sys.exit(USAGE)
+
+    if not query:
+        sys.exit(USAGE)
+    if count < 1:
+        sys.exit("websearch: -n must be at least 1")
+    return query, count, chars, check_backends(backends), as_json
+
+
+def check_backends(backends):
+    """Reject unknown engine names, which ddgs would otherwise silently ignore.
+
+    Its warning goes to a NullHandler, and dropping every name falls back to
+    "auto" -- so a typo quietly returns encyclopedia-heavy results instead.
+    """
+    names = [name.strip() for name in backends.split(",") if name.strip()]
+    available = sorted(ENGINES["text"])
+    unknown = [name for name in names if name not in {*available, "auto", "all"}]
+    if not names:
+        sys.exit("websearch: --backends needs at least one engine")
+    if unknown:
+        sys.exit(
+            f"websearch: unknown backend {', '.join(unknown)}"
+            f" (available: {', '.join(available)})"
+        )
+    return ",".join(names)
+
+
+def search(query, count, backends):
+    try:
+        results = DDGS().text(query, max_results=count, backend=backends)
+    except Exception as e:
+        # ddgs says "No results found." whether an engine was blocked, served an
+        # unparseable page, or genuinely had no hits -- it discards the HTTP status
+        # in BaseSearchEngine.request. Individual engines fail often enough that
+        # pinning one is far less reliable than the default spread.
+        sys.exit(f"websearch: {backends} returned nothing ({e}) -- an engine that is"
+                 " blocked or unscrapable looks identical to an empty result set;"
+                 " try more backends")
+    if not results:
+        sys.exit(f"websearch: no results for {query!r}")
+    return results
+
+
+def trim(text, limit):
+    lines = [line.rstrip() for line in text.strip().splitlines()]
+    paragraphs = [line for line in lines if line]
+    text = "\n\n".join(paragraphs)
+    if not limit or len(text) <= limit:
+        return text
+    cut = text[:limit]
+    space = cut.rfind(" ")
+    return (cut[:space] if space > limit // 2 else cut).rstrip() + "…"
+
+
+def excerpt(url, limit):
+    """Return the page's readable text, or None if it can't be retrieved."""
+    try:
+        html = trafilatura.fetch_url(url, config=FETCH_CONFIG)
+        text = trafilatura.extract(html, include_comments=False, include_tables=False)
+    except Exception:
+        return None
+    return trim(text, limit) if text else None
+
+
+def render(results, excerpts):
+    for i, (result, text) in enumerate(zip(results, excerpts), start=1):
+        body = text or result.get("body", "").strip()
+        suffix = "" if text else "  (snippet only)"
+        print(f"[{i}] {result.get('title', '').strip()}{suffix}")
+        print(f"    {result.get('href', '')}")
+        if body:
+            print()
+            for paragraph in body.split("\n\n"):
+                print(textwrap.fill(paragraph, WIDTH, initial_indent="    ",
+                                    subsequent_indent="    "))
+        print()
+
+
+def main():
+    query, count, chars, backends, as_json = parse_args(sys.argv[1:])
+    results = search(query, count, backends)
+
+    with concurrent.futures.ThreadPoolExecutor(min(len(results), 10)) as pool:
+        excerpts = list(pool.map(lambda r: excerpt(r.get("href", ""), chars), results))
+
+    if as_json:
+        json.dump(
+            [
+                {
+                    "title": r.get("title", "").strip(),
+                    "url": r.get("href", ""),
+                    "excerpt": text or r.get("body", "").strip(),
+                    "extracted": text is not None,
+                }
+                for r, text in zip(results, excerpts)
+            ],
+            sys.stdout,
+            indent=2,
+        )
+        sys.stdout.write("\n")
+    else:
+        render(results, excerpts)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except BrokenPipeError:
+        sys.stdout = None  # Stop the interpreter re-flushing the closed pipe at exit.
+    except KeyboardInterrupt:
+        sys.exit(130)
