@@ -54,10 +54,12 @@ WIDTH = 88
 TIMEOUT = 10
 
 # Sites that answer 403 to trafilatura's own agent often serve a browser fine, so
-# claim to be one. Setting this also drops trafilatura's Accept-Encoding header,
-# because it replaces the whole header dict once any agent is configured.
-USER_AGENT = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-              " (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+# claim to be one. Copied from this machine's Safari; refresh it when it ages, as a
+# browser version that no longer exists is itself a signal worth blocking on.
+# Setting this also drops trafilatura's Accept-Encoding header, because it replaces
+# the whole header dict once any agent is configured.
+USER_AGENT = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15"
+              " (KHTML, like Gecko) Version/26.6.2 Safari/605.1.15")
 
 USAGE = ("usage: websearch QUERY [-n COUNT] [--chars N] [--timeout SECONDS]"
          " [--backends LIST] [--json]")
