@@ -1,0 +1,156 @@
+#!/bin/bash
+#
+# Creates a .tar.gz archive of a directory in the current directory.
+#
+# The source may be anywhere on the filesystem, given as a relative or absolute
+# path. Archive members are stored relative to the directory's own name, so the
+# tarball unpacks into a single directory no matter where it was created from.
+# Hidden files are included and symlinks are stored as symlinks.
+#
+# Members are listed here and handed to tar rather than left to tar's own
+# recursion, which is what keeps sockets out and the archive out of itself. The
+# cost is that tar has to stat each path it is given, so a tree holding paths
+# longer than PATH_MAX (1024 on macOS) cannot be archived: the run fails with
+# "Cannot stat: File name too long" and writes nothing. Letting tar recurse would
+# lift that limit, at the price of both of the properties above.
+#
+# Requires bsdtar, as macOS ships: -n, -s and the S modifier are not GNU tar.
+#
+# Usage:
+#   tarball DIRECTORY
+
+set -euo pipefail
+
+# With CDPATH set, cd resolves against it and prints where it landed, which both
+# misdirects the cd and leaves that path in the output captured below.
+unset CDPATH
+
+if [ $# -ne 1 ]; then
+  echo "Usage: tarball DIRECTORY" >&2
+  exit 1
+fi
+
+if [ ! -d "$1" ]; then
+  echo "tarball: not a directory: $1" >&2
+  exit 1
+fi
+
+# The trailing x survives command substitution stripping trailing newlines, so a
+# directory whose name ends in one is not silently read as its shorter sibling.
+src=$(cd "$1" && pwd -P && printf x)
+src="${src%$'\nx'}"
+name=$(basename "$src" && printf x)
+name="${name%$'\nx'}"
+parent=$(dirname "$src" && printf x)
+parent="${parent%$'\nx'}"
+
+if [ "$src" = "/" ]; then
+  echo "tarball: refusing to archive the filesystem root" >&2
+  exit 1
+fi
+
+# A dotted source would give a hidden tarball, which is easy to lose track of
+# when the archive is the thing you go on to move around. A name that is nothing
+# but dots has nothing to strip down to, so it keeps the name it came with.
+base="${name#"${name%%[!.]*}"}"
+: "${base:=$name}"
+
+# The physical cwd, so that comparing it against the equally physical $src below
+# is a like-for-like test. On macOS $PWD is routinely a symlinked path (/tmp).
+dest=$(pwd -P && printf x)
+dest="${dest%$'\nx'}"
+out="$dest/$base.tar.gz"
+
+# -L as well as -e, because a symlink pointing nowhere is not "existing" to -e,
+# and writing to it would land the archive on whatever it names instead.
+if [ -e "$out" ] || [ -L "$out" ]; then
+  echo "tarball: $out already exists" >&2
+  exit 1
+fi
+
+# The archive is built under a temporary name and renamed once whole, so an
+# interrupted run cannot leave a truncated archive sitting at the real one. It is
+# built outside the directory being archived, which is what keeps it out of its
+# own member list: anything under $src would otherwise be picked up, including a
+# temporary file abandoned by an earlier run that was killed outright.
+case "$dest/" in
+  "$src"/*) tmpdir="${TMPDIR:-/tmp}" ;;
+  *) tmpdir="$dest" ;;
+esac
+tmpdir=$(cd "$tmpdir" && pwd -P && printf x) || exit 1
+tmpdir="${tmpdir%$'\nx'}"
+
+case "$tmpdir/" in
+  "$src"/*)
+    echo "tarball: nowhere to build outside $src; set TMPDIR elsewhere" >&2
+    exit 1
+    ;;
+esac
+
+# mktemp rather than a name built from the PID: it creates the file exclusively,
+# so a guessed name planted ahead of the run as a symlink cannot be written
+# through, and it never collides with a concurrent run.
+tmp=$(mktemp "$tmpdir/.tarball.XXXXXX") || {
+  echo "tarball: cannot create a temporary file in $tmpdir" >&2
+  exit 1
+}
+
+# mktemp makes the file private to its owner; the archive should end up with the
+# permissions any other newly created file would have got.
+chmod "$(printf '%o' "$((8#666 & ~8#$(umask)))")" "$tmp"
+
+# tar writes messages without a trailing newline, so they are held back and
+# reprinted rather than run into ours. Cleanup failures are silenced: they would
+# otherwise talk over the real error on the way out.
+errors=$(mktemp)
+trap 'rm -f "$tmp" "$errors" 2>/dev/null' EXIT
+trap 'rm -f "$tmp" "$errors" 2>/dev/null; exit 130' INT
+trap 'rm -f "$tmp" "$errors" 2>/dev/null; exit 143' TERM
+trap 'rm -f "$tmp" "$errors" 2>/dev/null; exit 129' HUP
+
+# Sockets are live kernel endpoints with no storable content, and tar treats one
+# as a complaint-worthy surprise. Listing the members ourselves leaves them out
+# up front, so anything tar does say is worth passing on. -n stops tar recursing
+# into the directories in that list and archiving everything a second time.
+# COPYFILE_DISABLE stops macOS tar from adding ._* entries for extended attributes;
+# --acls is then needed explicitly, since dropping the AppleDouble files also drops
+# the only place ACLs would otherwise have been kept. Extended attributes are
+# stored without asking, but ACLs are not.
+status=0
+# "./$name" keeps find from reading a name that opens with a dash as an option;
+# tar's -s takes the resulting prefix back off the stored names. The trailing S
+# confines that edit to member names: by default it rewrites symlink targets too,
+# which silently rewrites any link pointing at a "./..." path.
+{ cd "$parent" && find "./$name" ! -type s -print0; } 2>"$errors" \
+  | COPYFILE_DISABLE=1 tar -czf "$tmp" -C "$parent" --null -n -T - -s '|^\./||S' \
+      --acls 2>>"$errors" || status=$?
+
+if [ -s "$errors" ]; then
+  awk '{ sub(/^:? ?tar: /, ""); sub(/^: /, ""); print "tarball: " $0 }' "$errors" >&2
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo "tarball: failed to archive $src, no tarball written" >&2
+  exit "$status"
+fi
+
+# -n so that a file arriving at the destination while the archive was being built
+# is not overwritten; mv reports success in that case, so the check is that the
+# temporary file has actually gone.
+mv_status=0
+mv -n "$tmp" "$out" 2>"$errors" || mv_status=$?
+if [ "$mv_status" -ne 0 ] || [ -e "$tmp" ]; then
+  if [ -s "$errors" ]; then
+    awk '{ sub(/^:? ?mv: /, ""); print "tarball: " $0 }' "$errors" >&2
+  fi
+  if [ -e "$out" ] || [ -L "$out" ]; then
+    echo "tarball: $out appeared while the archive was being built, leaving it alone" >&2
+  fi
+  echo "tarball: the finished archive could not be moved into place" >&2
+  # Said out loud because the cleanup on the way out will not manage it either if
+  # what stopped the rename was the directory being unwritable.
+  rm -f "$tmp" 2>/dev/null || echo "tarball: $tmp is left behind" >&2
+  exit 1
+fi
+
+echo "Created $out"
