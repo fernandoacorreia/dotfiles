@@ -1,0 +1,11 @@
+---
+- name: Install Mac apps from Homebrew Cask
+  community.general.homebrew_cask:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - gimp
+    - karabiner-elements
+    - podman-desktop
+    - slack
+    - visual-studio-code
