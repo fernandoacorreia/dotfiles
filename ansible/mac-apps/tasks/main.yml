@@ -5,7 +5,6 @@
     state: present
   with_items:
     - gimp
-    - karabiner-elements
     - podman-desktop
     - slack
     - visual-studio-code
