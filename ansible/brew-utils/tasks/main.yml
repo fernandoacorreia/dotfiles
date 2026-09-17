@@ -10,14 +10,20 @@
     - fnm
     - git-filter-repo
     - hexyl
+    - imagemagick
     - k9s
     - kubernetes-cli
     - lazydocker
     - mc
     - pillow
+    - poppler
     - pre-commit
     - prek
     - pstree
+    # Supersedes the openrsync that macOS ships, which lacks flags like
+    # --info=progress2. Wins on PATH via brew shellenv, ahead of /usr/bin.
+    - rsync
     - tldr
+    - yaml2json
     - yazi
     - zoxide
