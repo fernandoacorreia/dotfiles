@@ -1,17 +1,70 @@
 #!/bin/bash
+#
+# Saves all open Google Chrome tabs as a timestamped Markdown file in
+# ~/.local/state/chrome-tabs-backups/.
+# Designed to run as a scheduled/background task — output is logged.
+#
+set -o nounset -o pipefail
 
-# backup-chrome-tabs.sh — Save all open Google Chrome tabs as a Markdown file.
-# Queries every Chrome window/tab via AppleScript and writes a timestamped
-# backup to ~/.local/state/chrome-tabs-backups/chrome_tabs_<timestamp>.md
+BACKUP_DIR="$HOME/.local/state/chrome-tabs-backups"
+LOG_DIR="$HOME/.local/log"
+LOG_FILE="$LOG_DIR/backup-chrome-tabs.log"
+MARKER_FILE="$HOME/.local/state/backup-chrome-tabs.last-run"
+SUCCESS_MARKER="$HOME/.local/state/backup-chrome-tabs.last-success"
 
-# Define output file with timestamp and .md extension
-BACKUP_DIR="${HOME}/.local/state/chrome-tabs-backups"
-mkdir -p "$BACKUP_DIR"
-TIMESTAMP=$(date +%Y-%m-%d_%H-%M)
-OUTPUT_FILE="${BACKUP_DIR}/chrome_tabs_${TIMESTAMP}.md"
+timestamp() {
+  date '+%Y-%m-%d %H:%M:%S'
+}
 
-# Use osascript to query Chrome and format as Markdown
-osascript <<EOT > "$OUTPUT_FILE"
+log() {
+  echo "[$(timestamp)] $*" >> "$LOG_FILE"
+}
+
+# The message is passed through argv rather than interpolated into the
+# AppleScript source, because it carries osascript stderr, which can contain
+# arbitrary text taken from page titles.
+notify() {
+  osascript -e 'on run argv
+display notification (item 1 of argv) with title "backup-chrome-tabs failed"
+end run' "$1" >/dev/null 2>&1 \
+    || log "ERROR: notification not delivered"
+}
+
+# Records that the script ran to completion and how it went. The checker needs
+# the outcome as well as the time: a run that fails every hour keeps the
+# timestamp fresh, so a timestamp alone would look healthy forever.
+mark_run() {
+  local now
+  now="$(date '+%s')"
+  echo "$now $1" > "$MARKER_FILE"
+  if [[ "$1" == "ok" ]]; then
+    echo "$now" > "$SUCCESS_MARKER"
+  fi
+  return 0
+}
+
+mkdir -p "$LOG_DIR" "$BACKUP_DIR"
+
+log "=== Starting backup-chrome-tabs ==="
+
+# AppleScript's `tell application "Google Chrome"` would launch Chrome if it is
+# not running, so guard before reaching the tell block. -x anchors to the exact
+# process name so the "Google Chrome Helper" processes don't match.
+if ! pgrep -x "Google Chrome" >/dev/null; then
+  log "SKIP: Google Chrome is not running"
+  mark_run skip
+  log ""
+  exit 0
+fi
+
+TMP_FILE="$(mktemp "$BACKUP_DIR/.tmp.XXXXXX")" || {
+  log "ERROR: could not create temp file in $BACKUP_DIR"
+  log ""
+  exit 1
+}
+trap 'rm -f "$TMP_FILE"' EXIT
+
+APPLESCRIPT="$(cat <<'EOT'
 set tabList to "# Chrome Tabs Backup" & linefeed & "Generated: " & (current date as string) & linefeed & linefeed
 tell application "Google Chrome"
     set windowList to every window
@@ -28,5 +81,53 @@ tell application "Google Chrome"
 end tell
 return tabList
 EOT
+)"
 
-echo "Markdown backup saved to $OUTPUT_FILE"
+# Redirection order is load-bearing: 2>&1 duplicates stderr onto the command
+# substitution pipe while stdout is still pointed there, and only then does
+# >"$TMP_FILE" move stdout to the file. Reversing them would send the error
+# message into the backup instead of capturing it.
+if ! OSA_ERR="$(osascript -e "$APPLESCRIPT" 2>&1 >"$TMP_FILE")"; then
+  log "FAIL: osascript exited non-zero"
+  log "  $OSA_ERR"
+  notify "osascript failed: $OSA_ERR"
+  mark_run fail
+  log ""
+  exit 1
+fi
+
+if [[ ! -s "$TMP_FILE" ]]; then
+  log "FAIL: osascript succeeded but produced no output"
+  notify "osascript produced no output"
+  mark_run fail
+  log ""
+  exit 1
+fi
+
+WINDOWS="$(grep -c '^## Window ' "$TMP_FILE" || true)"
+TABS="$(grep -c '^- \[' "$TMP_FILE" || true)"
+
+if (( TABS == 0 )); then
+  log "WARN: Chrome is running but reported no tabs — no backup written"
+  mark_run skip
+  log ""
+  exit 0
+fi
+
+OUTPUT_FILE="$BACKUP_DIR/chrome_tabs_$(date '+%Y-%m-%d_%H-%M').md"
+
+# mktemp creates 0600; the existing backups are 0644.
+chmod 644 "$TMP_FILE"
+
+if ! MV_ERR="$(mv "$TMP_FILE" "$OUTPUT_FILE" 2>&1)"; then
+  log "FAIL: could not move temp file into place"
+  log "  $MV_ERR"
+  notify "could not write backup: $MV_ERR"
+  mark_run fail
+  log ""
+  exit 1
+fi
+
+log "OK: $WINDOWS windows, $TABS tabs -> $(basename "$OUTPUT_FILE")"
+mark_run ok
+log ""

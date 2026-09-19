@@ -1,0 +1,130 @@
+#!/bin/bash
+#
+# Alerts when backup-chrome-tabs has stopped running, or is running but failing
+# every time. Designed to run as a scheduled/background task — output is logged.
+#
+set -o nounset -o pipefail
+
+JOB_MARKER="$HOME/.local/state/backup-chrome-tabs.last-run"
+JOB_SUCCESS_MARKER="$HOME/.local/state/backup-chrome-tabs.last-success"
+OWN_MARKER="$HOME/.local/state/check-chrome-tabs-backup.last-run"
+LOG_DIR="$HOME/.local/log"
+LOG_FILE="$LOG_DIR/check-chrome-tabs-backup.log"
+
+# backup-chrome-tabs runs hourly; 3h allows for a couple of missed runs.
+JOB_STALE_AFTER=10800
+OWN_FRESH_WITHIN=7200
+
+NOW="$(date '+%s')"
+
+timestamp() {
+  date '+%Y-%m-%d %H:%M:%S'
+}
+
+log() {
+  echo "[$(timestamp)] $*" >> "$LOG_FILE"
+}
+
+notify() {
+  osascript -e 'on run argv
+display notification (item 1 of argv) with title "backup-chrome-tabs needs attention"
+end run' "$1" >/dev/null 2>&1 \
+    || log "ERROR: notification not delivered"
+}
+
+mark_run() {
+  echo "$NOW" > "$OWN_MARKER"
+}
+
+marker_epoch() {
+  local file="$1" value
+  [[ -r "$file" ]] || return 1
+  read -r value _ < "$file" || return 1
+  [[ "$value" =~ ^[0-9]+$ ]] || return 1
+  echo "$value"
+}
+
+marker_outcome() {
+  local file="$1" value
+  [[ -r "$file" ]] || return 1
+  read -r _ value < "$file" || return 1
+  [[ "$value" =~ ^(ok|skip|fail)$ ]] || return 1
+  echo "$value"
+}
+
+mkdir -p "$LOG_DIR" "$(dirname "$OWN_MARKER")"
+
+log "=== Starting check-chrome-tabs-backup ==="
+
+if ! JOB_EPOCH="$(marker_epoch "$JOB_MARKER")"; then
+  log "WARN: no readable run marker at $JOB_MARKER — has backup-chrome-tabs run yet?"
+  mark_run
+  log ""
+  exit 0
+fi
+
+JOB_AGE=$(( NOW - JOB_EPOCH ))
+JOB_OUTCOME="$(marker_outcome "$JOB_MARKER" || echo unknown)"
+
+if (( JOB_AGE > JOB_STALE_AFTER )); then
+  # The job isn't running. Tell that apart from "the machine was asleep": macOS
+  # cron does not run missed jobs after wake, so a sleep gap stales this
+  # checker's own marker too. Only a stale job alongside a healthy checker
+  # means something is actually wrong.
+  if ! OWN_EPOCH="$(marker_epoch "$OWN_MARKER")"; then
+    log "WARN: backup-chrome-tabs is stale (${JOB_AGE}s) but this is the checker's first run — not alerting"
+    mark_run
+    log ""
+    exit 0
+  fi
+
+  OWN_AGE=$(( NOW - OWN_EPOCH ))
+  if (( OWN_AGE > OWN_FRESH_WITHIN )); then
+    log "WARN: backup-chrome-tabs is stale (${JOB_AGE}s) but so is this checker (${OWN_AGE}s) — assuming sleep, not alerting"
+    mark_run
+    log ""
+    exit 0
+  fi
+
+  log "FAIL: backup-chrome-tabs has not run for ${JOB_AGE}s (threshold ${JOB_STALE_AFTER}s)"
+  notify "No run for $(( JOB_AGE / 3600 ))h — cron may be broken"
+  mark_run
+  log ""
+  exit 1
+fi
+
+# The job is running. A run that fails every hour keeps the marker fresh, so
+# also check that it is actually succeeding — otherwise a broken osascript
+# would look healthy here and the per-run notification would be the only
+# signal, which is the failure mode this whole checker exists to catch.
+if [[ "$JOB_OUTCOME" == "fail" ]]; then
+  SUCCESS_AGE=""
+  if SUCCESS_EPOCH="$(marker_epoch "$JOB_SUCCESS_MARKER")"; then
+    SUCCESS_AGE=$(( NOW - SUCCESS_EPOCH ))
+  fi
+
+  if [[ -z "$SUCCESS_AGE" ]]; then
+    log "FAIL: backup-chrome-tabs is failing and has never succeeded"
+    notify "Failing every run and has never succeeded"
+    mark_run
+    log ""
+    exit 1
+  fi
+
+  if (( SUCCESS_AGE > JOB_STALE_AFTER )); then
+    log "FAIL: backup-chrome-tabs last ran ${JOB_AGE}s ago but has not succeeded for ${SUCCESS_AGE}s"
+    notify "Failing every run — no success for $(( SUCCESS_AGE / 3600 ))h"
+    mark_run
+    log ""
+    exit 1
+  fi
+
+  log "WARN: last run failed (${JOB_AGE}s ago) but a success ${SUCCESS_AGE}s ago is recent enough — not alerting yet"
+  mark_run
+  log ""
+  exit 0
+fi
+
+log "OK: backup-chrome-tabs ran ${JOB_AGE}s ago (outcome: $JOB_OUTCOME)"
+mark_run
+log ""

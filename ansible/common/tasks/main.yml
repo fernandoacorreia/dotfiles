@@ -64,3 +64,11 @@
     hour: "*"
     job: "{{ home_dir }}/dotfiles/bin/backup-chrome-tabs"
   when: crontab_check.rc == 0
+
+- name: Schedule check-chrome-tabs-backup cron job
+  cron:
+    name: "check-chrome-tabs-backup"
+    minute: "45"
+    hour: "*"
+    job: "{{ home_dir }}/dotfiles/bin/check-chrome-tabs-backup"
+  when: crontab_check.rc == 0
