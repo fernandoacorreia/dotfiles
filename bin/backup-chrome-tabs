@@ -17,7 +17,9 @@ timestamp() {
 }
 
 log() {
-  echo "[$(timestamp)] $*" >> "$LOG_FILE"
+  if ! echo "[$(timestamp)] $*" >> "$LOG_FILE" 2>/dev/null; then
+    echo "backup-chrome-tabs: cannot write $LOG_FILE: $*" >&2
+  fi
 }
 
 # The message is passed through argv rather than interpolated into the
@@ -27,7 +29,7 @@ notify() {
   osascript -e 'on run argv
 display notification (item 1 of argv) with title "backup-chrome-tabs failed"
 end run' "$1" >/dev/null 2>&1 \
-    || log "ERROR: notification not delivered"
+    || log "ERROR: notifier exited non-zero — notification may not have been delivered"
 }
 
 # Records that the script ran to completion and how it went. The checker needs
@@ -36,21 +38,35 @@ end run' "$1" >/dev/null 2>&1 \
 mark_run() {
   local now
   now="$(date '+%s')"
-  echo "$now $1" > "$MARKER_FILE"
+  write_marker "$MARKER_FILE" "$now $1"
   if [[ "$1" == "ok" ]]; then
-    echo "$now" > "$SUCCESS_MARKER"
+    write_marker "$SUCCESS_MARKER" "$now"
   fi
   return 0
 }
 
-mkdir -p "$LOG_DIR" "$BACKUP_DIR"
+# Written via temp-and-rename: a plain `>` truncates first, so a failed write would
+# leave an empty marker, which the checker cannot tell from a missing one.
+write_marker() {
+  local file="$1" content="$2"
+  if ! (echo "$content" > "$file.tmp" && mv -f "$file.tmp" "$file"); then
+    log "ERROR: could not write marker $file"
+    rm -f "$file.tmp"
+  fi
+}
+
+if ! mkdir -p "$LOG_DIR" "$BACKUP_DIR"; then
+  echo "backup-chrome-tabs: cannot create $LOG_DIR or $BACKUP_DIR" >&2
+  exit 1
+fi
 
 log "=== Starting backup-chrome-tabs ==="
 
 # AppleScript's `tell application "Google Chrome"` would launch Chrome if it is
 # not running, so guard before reaching the tell block. -x anchors to the exact
-# process name so the "Google Chrome Helper" processes don't match.
-if ! pgrep -x "Google Chrome" >/dev/null; then
+# process name so the "Google Chrome Helper" processes don't match, and -U scopes
+# the search to this user so another account's Chrome cannot satisfy the guard.
+if ! pgrep -U "$(id -u)" -x "Google Chrome" >/dev/null; then
   log "SKIP: Google Chrome is not running"
   mark_run skip
   log ""
@@ -58,7 +74,9 @@ if ! pgrep -x "Google Chrome" >/dev/null; then
 fi
 
 TMP_FILE="$(mktemp "$BACKUP_DIR/.tmp.XXXXXX")" || {
-  log "ERROR: could not create temp file in $BACKUP_DIR"
+  log "FAIL: could not create temp file in $BACKUP_DIR"
+  notify "could not create temp file in $BACKUP_DIR"
+  mark_run fail
   log ""
   exit 1
 }
@@ -104,8 +122,25 @@ if [[ ! -s "$TMP_FILE" ]]; then
   exit 1
 fi
 
-WINDOWS="$(grep -c '^## Window ' "$TMP_FILE" || true)"
-TABS="$(grep -c '^- \[' "$TMP_FILE" || true)"
+# grep exits 1 for "no matches" and >1 for a real error. Collapsing both to 0 would
+# turn a grep failure into a silent "no tabs" skip.
+count_matches() {
+  local pattern="$1" count rc
+  count="$(grep -c "$pattern" "$TMP_FILE")"
+  rc=$?
+  if (( rc > 1 )); then
+    return 1
+  fi
+  echo "$count"
+}
+
+if ! WINDOWS="$(count_matches '^## Window ')" || ! TABS="$(count_matches '^- \[')"; then
+  log "FAIL: could not count windows or tabs in the captured output"
+  notify "could not count windows or tabs in the captured output"
+  mark_run fail
+  log ""
+  exit 1
+fi
 
 if (( TABS == 0 )); then
   log "WARN: Chrome is running but reported no tabs — no backup written"
@@ -116,10 +151,19 @@ fi
 
 OUTPUT_FILE="$BACKUP_DIR/chrome_tabs_$(date '+%Y-%m-%d_%H-%M').md"
 
-# mktemp creates 0600; the existing backups are 0644.
-chmod 644 "$TMP_FILE"
+# Left at mktemp's 0600: these files list every URL in every tab, some carrying
+# tokens, and $HOME is group-readable.
+# A backup already exists for this minute, so there is nothing to add and nothing
+# wrong: RunAtLoad can coincide with a scheduled fire, and manual runs happen. Skip
+# rather than overwrite, and stay quiet — this is not a failure.
+if [[ -e "$OUTPUT_FILE" ]]; then
+  log "SKIP: $(basename "$OUTPUT_FILE") already exists — not overwritten"
+  mark_run skip
+  log ""
+  exit 0
+fi
 
-if ! MV_ERR="$(mv "$TMP_FILE" "$OUTPUT_FILE" 2>&1)"; then
+if ! MV_ERR="$(mv -n "$TMP_FILE" "$OUTPUT_FILE" 2>&1)"; then
   log "FAIL: could not move temp file into place"
   log "  $MV_ERR"
   notify "could not write backup: $MV_ERR"

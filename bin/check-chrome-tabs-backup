@@ -1,19 +1,21 @@
 #!/bin/bash
 #
-# Alerts when backup-chrome-tabs has stopped running, or is running but failing
-# every time. Designed to run as a scheduled/background task — output is logged.
+# Alerts when backup-chrome-tabs stops reporting, or keeps reporting but stops
+# producing backups. Designed to run as a scheduled/background task — output is
+# logged.
 #
 set -o nounset -o pipefail
 
 JOB_MARKER="$HOME/.local/state/backup-chrome-tabs.last-run"
 JOB_SUCCESS_MARKER="$HOME/.local/state/backup-chrome-tabs.last-success"
-OWN_MARKER="$HOME/.local/state/check-chrome-tabs-backup.last-run"
 LOG_DIR="$HOME/.local/log"
 LOG_FILE="$LOG_DIR/check-chrome-tabs-backup.log"
 
-# backup-chrome-tabs runs hourly; 3h allows for a couple of missed runs.
+# backup-chrome-tabs runs hourly. Its LaunchAgent runs a missed interval when the
+# machine wakes, so a stale marker means the job is broken rather than that the
+# machine slept — no sleep-gap heuristic is needed here.
 JOB_STALE_AFTER=10800
-OWN_FRESH_WITHIN=7200
+SUCCESS_STALE_AFTER=86400
 
 NOW="$(date '+%s')"
 
@@ -22,109 +24,78 @@ timestamp() {
 }
 
 log() {
-  echo "[$(timestamp)] $*" >> "$LOG_FILE"
+  if ! echo "[$(timestamp)] $*" >> "$LOG_FILE" 2>/dev/null; then
+    echo "check-chrome-tabs-backup: cannot write $LOG_FILE: $*" >&2
+  fi
 }
 
 notify() {
   osascript -e 'on run argv
 display notification (item 1 of argv) with title "backup-chrome-tabs needs attention"
 end run' "$1" >/dev/null 2>&1 \
-    || log "ERROR: notification not delivered"
+    || log "ERROR: notifier exited non-zero — notification may not have been delivered"
 }
 
-mark_run() {
-  echo "$NOW" > "$OWN_MARKER"
-}
-
-marker_epoch() {
-  local file="$1" value
-  [[ -r "$file" ]] || return 1
-  read -r value _ < "$file" || return 1
-  [[ "$value" =~ ^[0-9]+$ ]] || return 1
-  echo "$value"
-}
-
-marker_outcome() {
-  local file="$1" value
-  [[ -r "$file" ]] || return 1
-  read -r _ value < "$file" || return 1
-  [[ "$value" =~ ^(ok|skip|fail)$ ]] || return 1
-  echo "$value"
-}
-
-mkdir -p "$LOG_DIR" "$(dirname "$OWN_MARKER")"
-
-log "=== Starting check-chrome-tabs-backup ==="
-
-if ! JOB_EPOCH="$(marker_epoch "$JOB_MARKER")"; then
-  log "WARN: no readable run marker at $JOB_MARKER — has backup-chrome-tabs run yet?"
-  mark_run
+fail() {
+  log "FAIL: $1"
+  notify "$1"
   log ""
-  exit 0
-fi
+  exit 1
+}
 
-JOB_AGE=$(( NOW - JOB_EPOCH ))
-JOB_OUTCOME="$(marker_outcome "$JOB_MARKER" || echo unknown)"
-
-if (( JOB_AGE > JOB_STALE_AFTER )); then
-  # The job isn't running. Tell that apart from "the machine was asleep": macOS
-  # cron does not run missed jobs after wake, so a sleep gap stales this
-  # checker's own marker too. Only a stale job alongside a healthy checker
-  # means something is actually wrong.
-  if ! OWN_EPOCH="$(marker_epoch "$OWN_MARKER")"; then
-    log "WARN: backup-chrome-tabs is stale (${JOB_AGE}s) but this is the checker's first run — not alerting"
-    mark_run
-    log ""
-    exit 0
-  fi
-
-  OWN_AGE=$(( NOW - OWN_EPOCH ))
-  if (( OWN_AGE > OWN_FRESH_WITHIN )); then
-    log "WARN: backup-chrome-tabs is stale (${JOB_AGE}s) but so is this checker (${OWN_AGE}s) — assuming sleep, not alerting"
-    mark_run
-    log ""
-    exit 0
-  fi
-
-  log "FAIL: backup-chrome-tabs has not run for ${JOB_AGE}s (threshold ${JOB_STALE_AFTER}s)"
-  notify "No run for $(( JOB_AGE / 3600 ))h — cron may be broken"
-  mark_run
-  log ""
+if ! mkdir -p "$LOG_DIR"; then
+  echo "check-chrome-tabs-backup: cannot create $LOG_DIR" >&2
   exit 1
 fi
 
-# The job is running. A run that fails every hour keeps the marker fresh, so
-# also check that it is actually succeeding — otherwise a broken osascript
-# would look healthy here and the per-run notification would be the only
-# signal, which is the failure mode this whole checker exists to catch.
-if [[ "$JOB_OUTCOME" == "fail" ]]; then
-  SUCCESS_AGE=""
-  if SUCCESS_EPOCH="$(marker_epoch "$JOB_SUCCESS_MARKER")"; then
+log "=== Starting check-chrome-tabs-backup ==="
+
+# The backup agent sets RunAtLoad, so a marker exists from the moment it is loaded.
+# An absent marker therefore means the job is not installed or cannot write, not
+# that it simply has not run yet.
+[[ -e "$JOB_MARKER" ]] || fail "has never reported — run marker is missing"
+[[ -r "$JOB_MARKER" ]] || fail "run marker exists but is unreadable"
+
+JOB_EPOCH=""
+JOB_OUTCOME=""
+read -r JOB_EPOCH JOB_OUTCOME _ < "$JOB_MARKER" || true
+
+[[ "$JOB_EPOCH" =~ ^[0-9]+$ ]] || fail "run marker is malformed — expected an epoch, found '$JOB_EPOCH'"
+[[ "$JOB_OUTCOME" =~ ^(ok|skip|fail)$ ]] || fail "run marker has an unrecognised outcome '$JOB_OUTCOME'"
+
+JOB_AGE=$(( NOW - JOB_EPOCH ))
+(( JOB_AGE >= 0 )) || fail "run marker is dated in the future — clock or marker corruption"
+(( JOB_AGE <= JOB_STALE_AFTER )) || fail "has not reported for $(( JOB_AGE / 3600 ))h"
+
+# A fresh marker only proves the script ran, not that it produced anything. Check
+# the last success regardless of the latest outcome: a permanent run of `skip` (say,
+# the pgrep guard stops matching after a Chrome rename) hides a dead job just as
+# effectively as a run of `fail`.
+SUCCESS_AGE=""
+if [[ -r "$JOB_SUCCESS_MARKER" ]]; then
+  SUCCESS_EPOCH=""
+  read -r SUCCESS_EPOCH _ < "$JOB_SUCCESS_MARKER" || true
+  if [[ "$SUCCESS_EPOCH" =~ ^[0-9]+$ ]]; then
     SUCCESS_AGE=$(( NOW - SUCCESS_EPOCH ))
+    (( SUCCESS_AGE >= 0 )) || fail "success marker is dated in the future — clock or marker corruption"
   fi
-
-  if [[ -z "$SUCCESS_AGE" ]]; then
-    log "FAIL: backup-chrome-tabs is failing and has never succeeded"
-    notify "Failing every run and has never succeeded"
-    mark_run
-    log ""
-    exit 1
-  fi
-
-  if (( SUCCESS_AGE > JOB_STALE_AFTER )); then
-    log "FAIL: backup-chrome-tabs last ran ${JOB_AGE}s ago but has not succeeded for ${SUCCESS_AGE}s"
-    notify "Failing every run — no success for $(( SUCCESS_AGE / 3600 ))h"
-    mark_run
-    log ""
-    exit 1
-  fi
-
-  log "WARN: last run failed (${JOB_AGE}s ago) but a success ${SUCCESS_AGE}s ago is recent enough — not alerting yet"
-  mark_run
-  log ""
-  exit 0
 fi
 
-log "OK: backup-chrome-tabs ran ${JOB_AGE}s ago (outcome: $JOB_OUTCOME)"
-mark_run
+# Gate on Chrome actually running, so a legitimately Chrome-free stretch stays quiet.
+# Chrome running plus no successful backup is unambiguously wrong.
+CHROME_RUNNING=no
+if pgrep -U "$(id -u)" -x "Google Chrome" >/dev/null; then
+  CHROME_RUNNING=yes
+fi
+
+if [[ "$CHROME_RUNNING" == "yes" ]]; then
+  if [[ -z "$SUCCESS_AGE" ]]; then
+    fail "Chrome is running but no backup has ever succeeded"
+  fi
+  if (( SUCCESS_AGE > SUCCESS_STALE_AFTER )); then
+    fail "Chrome is running but no backup has succeeded for $(( SUCCESS_AGE / 3600 ))h"
+  fi
+fi
+
+log "OK: reported ${JOB_AGE}s ago (outcome: $JOB_OUTCOME), Chrome running: $CHROME_RUNNING"
 log ""

@@ -49,26 +49,25 @@
   changed_when: false
   failed_when: false
 
-- name: Schedule git-fetch-all cron job
+# These jobs moved to LaunchAgents (see the launchd role), because launchd runs a
+# missed interval when the machine wakes while cron silently skips it. Declared
+# absent rather than deleted: the cron module only touches entries it is told about,
+# so removing the tasks outright would leave the crontab lines behind for good.
+# Delete these three once every machine has run the playbook at least once.
+- name: Remove git-fetch-all cron job, superseded by its LaunchAgent
   cron:
     name: "git-fetch-all"
-    minute: "0"
-    hour: "*"
-    job: "{{ home_dir }}/dotfiles/bin/git-fetch-all"
+    state: absent
   when: crontab_check.rc == 0
 
-- name: Schedule backup-chrome-tabs cron job
+- name: Remove backup-chrome-tabs cron job, superseded by its LaunchAgent
   cron:
     name: "backup-chrome-tabs"
-    minute: "30"
-    hour: "*"
-    job: "{{ home_dir }}/dotfiles/bin/backup-chrome-tabs"
+    state: absent
   when: crontab_check.rc == 0
 
-- name: Schedule check-chrome-tabs-backup cron job
+- name: Remove check-chrome-tabs-backup cron job, superseded by its LaunchAgent
   cron:
     name: "check-chrome-tabs-backup"
-    minute: "45"
-    hour: "*"
-    job: "{{ home_dir }}/dotfiles/bin/check-chrome-tabs-backup"
+    state: absent
   when: crontab_check.rc == 0

@@ -1,0 +1,19 @@
+---
+- name: Create LaunchAgents directory
+  file:
+    path: "{{ home_dir }}/Library/LaunchAgents"
+    state: directory
+
+# StandardErrorPath cannot be created by launchd if its parent is missing.
+- name: Create log directory for LaunchAgent stderr
+  file:
+    path: "{{ home_dir }}/.local/log"
+    state: directory
+
+- name: Install LaunchAgent plists
+  template:
+    src: "{{ home_dir }}/dotfiles/templates/launchd/agent.plist.j2"
+    dest: "{{ home_dir }}/Library/LaunchAgents/{{ item.label }}.plist"
+    mode: "0644"
+  loop: "{{ launchd_jobs }}"
+  notify: Reload LaunchAgents

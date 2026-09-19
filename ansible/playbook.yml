@@ -29,6 +29,7 @@
     - sourcetree
     - mac-apps
     - karabiner
+    - launchd
 
 # General utilities
 - hosts: all

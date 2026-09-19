@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Managed by Ansible (dotfiles/ansible/launchd). Local edits are overwritten. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>{{ item.label }}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>{{ home_dir }}/dotfiles/bin/{{ item.program }}</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <!-- StartCalendarInterval, never StartInterval. Only the calendar variant runs a
+       missed interval after the machine wakes; StartInterval drops it and restarts
+       counting from the wake time, which is the cron behaviour these agents replaced. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Minute</key><integer>{{ item.minute }}</integer>
+  </dict>
+{% if item.run_at_load %}
+  <key>RunAtLoad</key><true/>
+{% endif %}
+  <key>StandardErrorPath</key><string>{{ home_dir }}/.local/log/{{ item.program }}.stderr.log</string>
+</dict>
+</plist>

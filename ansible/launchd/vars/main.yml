@@ -1,0 +1,20 @@
+---
+# Scheduled jobs run as user LaunchAgents rather than cron, because launchd runs a
+# missed StartCalendarInterval after the machine wakes while cron silently skips it.
+launchd_jobs:
+  - label: com.fercor.git-fetch-all
+    program: git-fetch-all
+    minute: 0
+    run_at_load: false
+
+  # RunAtLoad guarantees a run marker exists as soon as the agent is loaded, so the
+  # checker can treat a missing marker as a fault rather than a cold start.
+  - label: com.fercor.backup-chrome-tabs
+    program: backup-chrome-tabs
+    minute: 30
+    run_at_load: true
+
+  - label: com.fercor.check-chrome-tabs-backup
+    program: check-chrome-tabs-backup
+    minute: 45
+    run_at_load: false

@@ -1,0 +1,9 @@
+---
+# bootout/bootstrap rather than the legacy load/unload, which man launchctl lists
+# under LEGACY SUBCOMMANDS and which fail in assorted ways on current macOS.
+# bootout is allowed to fail: the label is not registered on a first install.
+- name: Reload LaunchAgents
+  shell: |
+    launchctl bootout "gui/$(id -u)/{{ item.label }}" 2>/dev/null || true
+    launchctl bootstrap "gui/$(id -u)" "{{ home_dir }}/Library/LaunchAgents/{{ item.label }}.plist"
+  loop: "{{ launchd_jobs }}"
