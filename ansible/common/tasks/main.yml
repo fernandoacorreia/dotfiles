@@ -42,32 +42,3 @@
   file:
     path: /opt/bin
     state: directory
-
-- name: Check for crontab support
-  command: which crontab
-  register: crontab_check
-  changed_when: false
-  failed_when: false
-
-# These jobs moved to LaunchAgents (see the launchd role), because launchd runs a
-# missed interval when the machine wakes while cron silently skips it. Declared
-# absent rather than deleted: the cron module only touches entries it is told about,
-# so removing the tasks outright would leave the crontab lines behind for good.
-# Delete these three once every machine has run the playbook at least once.
-- name: Remove git-fetch-all cron job, superseded by its LaunchAgent
-  cron:
-    name: "git-fetch-all"
-    state: absent
-  when: crontab_check.rc == 0
-
-- name: Remove backup-chrome-tabs cron job, superseded by its LaunchAgent
-  cron:
-    name: "backup-chrome-tabs"
-    state: absent
-  when: crontab_check.rc == 0
-
-- name: Remove check-chrome-tabs-backup cron job, superseded by its LaunchAgent
-  cron:
-    name: "check-chrome-tabs-backup"
-    state: absent
-  when: crontab_check.rc == 0
