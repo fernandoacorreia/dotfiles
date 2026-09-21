@@ -9,6 +9,12 @@ PROJECTS_DIR="$HOME/projects"
 LOG_DIR="$HOME/.local/log"
 LOG_FILE="$LOG_DIR/git-fetch-all.log"
 
+# Fetching over SSH waits indefinitely by default, so a connection that dies
+# mid-run — a laptop going to sleep — hangs until someone notices. That matters
+# more than it sounds: launchd will not start a second instance of this job while
+# one is still live, so a single hung fetch suppresses every subsequent run.
+export GIT_SSH_COMMAND='ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3'
+
 timestamp() {
   date '+%Y-%m-%d %H:%M:%S'
 }
