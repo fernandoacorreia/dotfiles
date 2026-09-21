@@ -43,7 +43,7 @@ for DIR in "$PROJECTS_DIR"/*/; do
   REPO_NAME="$(basename "$DIR")"
   TOTAL=$((TOTAL + 1))
 
-  if OUTPUT=$(cd "$DIR" && git fetch --all 2>&1); then
+  if OUTPUT=$(cd "$DIR" && git fetch --all --tags --prune 2>&1); then
     log "OK: $REPO_NAME"
     SUCCESS=$((SUCCESS + 1))
   else
